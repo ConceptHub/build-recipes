@@ -1,0 +1,21 @@
+ #!/bin/bash
+ #
+ #SBATCH --partition=pm1-isw1   ### Partition (you may need to change this)
+ #SBATCH --job-name=gromacs_on_1_node
+ #SBATCH --time=512:00:00       ### WallTime - set it accordningly
+
+ #SBATCH --nodes           1    # MUST BE 1
+ #SBATCH --ntasks-per-node 1    # MUST BE 1
+ #SBATCH --cpus-per-task 256    # N MPI threads x M OpenMP threads (128 * 2 for AMD EPYC 7H12)
+                                # which is ntomp x ntmpi (see gmx mdrun line bellow)
+
+ #SBATCH -o slurm.%j.out        # STDOUT
+ #SBATCH -e slurm.%j.err        # STDERR
+
+ module purge
+ module load gromacs/2022/latest-gcc-mkl-nogpu-nompi
+
+ cd $SLURM_SUBMIT_DIR
+
+ gmx mdrun -ntomp 2 -ntmpi 128 -v -s prefix.tpr -deffnm prefix
+
