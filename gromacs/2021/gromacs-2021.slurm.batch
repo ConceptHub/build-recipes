@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+#SBATCH --partition=pm1-isw1   ### Partition (you may need to change this)
+#SBATCH --job-name=gromacs_on_8_nodes
+#SBATCH --time=512:00:00       ### WallTime - set it accordningly
+
+#SBATCH --nodes           8    # May vary
+#SBATCH --ntasks-per-node 128  # Must be less/equal to the number of CPU cores
+#SBATCH --cpus-per-task   2    # Must be 2, unless you have a better guess
+
+#SBATCH -o slurm.%j.out        # STDOUT
+#SBATCH -e slurm.%j.err        # STDERR
+
+module purge
+module load gromacs/2021/latest-gcc-mkl-nogpu-intelmpi
+
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+export OMP_PLACES=cores
+export OMP_PROC_BIND=spread
+export I_MPI_PIN=1
+export I_MPI_PIN_DOMAIN=omp:platform
+export FI_PROVIDER=verbs
+export UCX_NET_DEVICES=mlx5_0:1
+
+cd $SLURM_SUBMIT_DIR
+
+mpirun gmx_mpi mdrun -ntomp ${SLURM_CPUS_PER_TASK} -v -s prefix.tpr -deffnm prefix
+
