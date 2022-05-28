@@ -1,0 +1,44 @@
+MAJOR_VERSION=2021
+MINOR_VERSION=4
+VERSION=$MAJOR_VERSION.$MINOR_VERSION
+PACKAGE_NAME='gromacs-'$VERSION
+FILE_NAME=$PACKAGE_NAME'.tar.gz'
+BUILD_DIR=~/build
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+
+export LANG=C
+module purge
+module load intel
+module load mpi/latest
+module load mkl/latest
+module load cmake/latest
+module load gcc/12/latest
+
+CMAKE_BUILD_DIR_PREFIX='gcc-mkl-nogpu-intelmpi'
+CMAKE_BUILD_DIR=$BUILD_DIR/$PACKAGE_NAME/$CMAKE_BUILD_DIR_PREFIX
+INSTALL_PREFIX=/opt/software/gromacs/$MAJOR_VERSION/$VERSION-$CMAKE_BUILD_DIR_PREFIX
+
+mkdir $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DGMX_MPI=ON -DGMX_OPENMP=ON -DGMX_GPU=OFF -DGMX_HWLOC=OFF -DGMX_OPENMP_MAX_THREADS=256 -DGMX_FFT_LIBRARY=mkl -DGMX_SIMD=AVX2_256 -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-march=znver2 -mtune=znver2" -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=znver2 -mtune=znver2" -DBUILD_SHARED_LIBS=ON -DGMX_THREAD_MPI=OFF -DGMX_EXTERNAL_BLAS=ON -DGMX_BLAS_USER=/opt/software/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so -DMKL_INCLUDE_DIR=/opt/software/intel/oneapi/mkl/latest/include -DMKL_LIBRARIES=/opt/software/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so
+make -j 24 install || exit
+
+cd ..
+
+CMAKE_BUILD_DIR_PREFIX='gcc-mkl-nogpu-nompi'
+CMAKE_BUILD_DIR=$BUILD_DIR/$PACKAGE_NAME/$CMAKE_BUILD_DIR_PREFIX
+INSTALL_PREFIX=/opt/software/gromacs/$MAJOR_VERSION/$VERSION-$CMAKE_BUILD_DIR_PREFIX
+
+mkdir $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DGMX_MPI=OFF -DGMX_OPENMP=ON -DGMX_GPU=OFF -DGMX_HWLOC=OFF -DGMX_OPENMP_MAX_THREADS=256 -DGMX_FFT_LIBRARY=mkl -DGMX_SIMD=AVX2_256 -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-march=znver2 -mtune=znver2" -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS="-march=znver2 -mtune=znver2" -DBUILD_SHARED_LIBS=ON -DGMX_THREAD_MPI=ON -DGMX_EXTERNAL_BLAS=ON -DGMX_BLAS_USER=/opt/software/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so -DMKL_INCLUDE_DIR=/opt/software/intel/oneapi/mkl/latest/include -DMKL_LIBRARIES=/opt/software/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so
+make -j 24 install || exit
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+
