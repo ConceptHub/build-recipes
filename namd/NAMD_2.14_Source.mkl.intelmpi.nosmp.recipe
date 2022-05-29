@@ -1,0 +1,34 @@
+MAJOR_VERSION=2
+MINOR_VERSION=14
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+rm -fr ~/build/NAMD_${VERSION}_Source
+cd ~/build
+tar xvf NAMD_${VERSION}_Source.tar.gz > /dev/null 2>&1
+
+export LANG=C
+export LC_ALL=C
+
+module purge
+module load gcc/11/latest
+module load intel
+module load compiler/latest
+module load mkl/latest
+module load mpi/latest
+module load tcl/8/latest
+
+cd ~/build/NAMD_${VERSION}_Source
+cp arch/Linux-x86_64.tcl arch/Linux-x86_64.tcl.orig
+sed -i 's/ltcl8.5/ltcl8.6/g' arch/Linux-x86_64.tcl
+mkdir charm-6.10.2-non-smp
+tar xvf charm-6.10.2.tar -C charm-6.10.2-non-smp --strip-components=1 > /dev/null 2>&1
+cd charm-6.10.2-non-smp
+./build charm++ mpi-linux-x86_64 icc --with-production "-O3 -ip -xCORE-AVX2"
+cd ..
+rm -fr Linux-x86_64-icc
+./config Linux-x86_64-icc --with-mkl --charm-base charm-6.10.2-non-smp --charm-arch mpi-linux-x86_64-icc --tcl-prefix /opt/software/tcl/8/8.6.12
+cd Linux-x86_64-icc
+make -j 12
+mkdir -p /opt/software/NAMD/2/2.14-intelmpi-nosmp/bin
+cp charmrun flipbinpdb flipdcd namd2 psfgen sortreplicas /opt/software/NAMD/2/2.14-intelmpi-nosmp/bin
+rm -fr ~/build/NAMD_${VERSION}_Source
+
