@@ -1,0 +1,59 @@
+VERSION="0.3.20"
+
+export LANG=C
+export LC_ALL=C
+
+# Intel oneAPI
+
+cd ~/build
+rm -fr OpenBLAS-$VERSION
+tar xvf OpenBLAS-$VERSION.tar.gz
+cd OpenBLAS-$VERSION
+
+module purge
+module load intel
+module load gcc/12/latest
+module load compiler/latest
+module load cmake/latest
+
+CC=icc FC=ifort make TARGET=ZEN
+rm -fr /opt/software/openblas/$VERSION-intel
+CC=icc FC=ifort make PREFIX=/opt/software/openblas/$VERSION-intel install
+
+rm -fr ~/build/OpenBLAS-$VERSION
+
+# GNU GCC
+
+cd ~/build
+rm -fr OpenBLAS-$VERSION
+tar xvf OpenBLAS-$VERSION.tar.gz
+cd OpenBLAS-$VERSION
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+CC=gcc FC=gfortran make TARGET=ZEN
+rm -fr /opt/software/openblas/$VERSION-gcc
+CC=gcc FC=gfortran make PREFIX=/opt/software/openblas/$VERSION-gcc install
+
+rm -fr ~/build/OpenBLAS-$VERSION
+
+
+# AMD AOCC
+
+cd ~/build
+rm -fr OpenBLAS-$VERSION
+tar xvf OpenBLAS-$VERSION.tar.gz
+cd OpenBLAS-$VERSION
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+
+CC=clang FC=flang make TARGET=ZEN
+rm -fr /opt/software/openblas/$VERSION-aocc
+CC=clang FC=flang make PREFIX=/opt/software/openblas/$VERSION-aocc install
+
+rm -fr ~/build/OpenBLAS-$VERSION
+
