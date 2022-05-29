@@ -1,0 +1,26 @@
+NAME="cmake"
+INSTALL_NAME="cmake"
+VERSION="3.23.2"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.gz
+cd $NAME-$VERSION
+
+# GNU GCC
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+mkdir ~/build/$NAME-$VERSION/build
+cd ~/build/$NAME-$VERSION/build
+
+cmake .. -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/$NAME/3/$VERSION
+make -j 12 install || exit
+cd ..
+rm -fr ~/build/$NAME-$VERSION
+
