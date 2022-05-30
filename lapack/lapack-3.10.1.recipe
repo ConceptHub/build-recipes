@@ -1,0 +1,56 @@
+NAME="lapack"
+INSTALL_NAME="lapack"
+VERSION="3.10.1"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.gz
+cd $NAME-$VERSION
+
+# Intel oneAPI
+
+module purge
+module load intel
+module load gcc/12/latest
+module load compiler/latest
+module load cmake/latest
+
+mkdir ~/build/$NAME-$VERSION/build
+cd ~/build/$NAME-$VERSION/build
+
+cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="ifort" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-intel
+make -j 12 install || exit
+cd ..
+rm -fr ~/build/$NAME-$VERSION/build
+
+# AMD AOCC
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+
+mkdir ~/build/$NAME-$VERSION/build
+cd ~/build/$NAME-$VERSION/build
+
+cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="flang" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-aocc
+make -j 12 install || exit
+cd ..
+rm -fr ~/build/$NAME-$VERSION/build
+
+# GNU GCC
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+mkdir ~/build/$NAME-$VERSION/build
+cd ~/build/$NAME-$VERSION/build
+
+cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="gfortran" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-gcc
+make -j 12 install || exit
+cd ..
+rm -fr ~/build/$NAME-$VERSION/build
+
