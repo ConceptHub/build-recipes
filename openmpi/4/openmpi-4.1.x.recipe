@@ -1,0 +1,67 @@
+NAME="openmpi"
+INSTALL_NAME="openmpi"
+VERSION="4.1.x"
+
+# Exports useful for compiling inside a container
+
+export LANG=C
+export LC_ALL=C
+
+# Intel oneAPI
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/11/latest
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.bz2 2>&1 > /dev/null
+cd $NAME-$VERSION
+
+CC=icc GXX=icpc FC=ifort ./configure --prefix=/opt/software/$INSTALL_NAME/$VERSION-intel  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+make -j 24 install  || exit
+
+# AMD AOCC
+
+module purge
+module load amd/aocc/latest
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.bz2 2>&1 > /dev/null
+cd $NAME-$VERSION
+
+CC=clang GXX=clang++ FC=flang ./configure --prefix=/opt/software/$INSTALL_NAME/$VERSION-aocc  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+make -j 24 install  || exit
+
+# GNU GCC
+
+module purge
+module load gcc/11/latest
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.bz2 2>&1 > /dev/null
+cd $NAME-$VERSION
+
+CC=gcc GXX=g++ FC=gfortran ./configure --prefix=/opt/software/$INSTALL_NAME/$VERSION-gcc  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+make -j 24 install  || exit
+
+# NVIDIA HPC SDK
+
+module purge
+module load nvidia
+module load nvhpc/latest
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.bz2 2>&1 > /dev/null
+cd $NAME-$VERSION
+
+CC=nvc CFLAGS="-fPIC" CXX=nvc++ CXXFLAGS="-fPIC" FC=nvfortran FCFLAGS="-fPIC" ./configure --prefix=/opt/software/$INSTALL_NAME/$VERSION-nvidia  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+make -j 24 install  || exit
+
+cd ~/build
+rm -fr $NAME-$VERSION
+
