@@ -10,6 +10,22 @@ rm -fr $NAME-$VERSION
 tar xvf $INSTALL_NAME-$VERSION.tgz
 cd $NAME-$VERSION
 
+# NVIDIA HPC SDK
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc/latest
+module load gcc/12/latest
+
+mkdir ~/build/$NAME-$VERSION/build
+cd ~/build/$NAME-$VERSION/build
+
+cmake .. -DCMAKE_Fortran_FLAGS="-fast -Mvect -msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="nvfortran" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-nvidia
+make -j 12 install || exit
+cd ..
+rm -fr ~/build/$NAME-$VERSION/build
+
 # Intel oneAPI
 
 module purge
