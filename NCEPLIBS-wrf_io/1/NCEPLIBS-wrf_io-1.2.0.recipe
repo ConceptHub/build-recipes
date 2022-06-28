@@ -1,0 +1,29 @@
+PACKAGE_NAME="NCEPLIBS-wrf_io"
+INSTALL_NAME="NCEPLIBS-wrf_io"
+MAJOR_VERSION=1
+MINOR_VERSION=2.0
+COMPILER="intel"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# Intel oneAPI
+
+module purge
+module load intel
+module load compiler/latest
+module load netcdf/fortran/4.5/latest-intel-hdf5_1.12_api_v112-intel_mpi
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} -DNetCDF_INCLUDE_DIRS=/opt/software/netcdf-c-4.8.1-intel-hdf5_1.12-api_v112-intel_mpi/include/
+
+make -j 12 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+
+
