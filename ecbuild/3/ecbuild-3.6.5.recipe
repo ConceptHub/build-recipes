@@ -1,0 +1,27 @@
+NAME="ecbuild"
+INSTALL_NAME="ecbuild"
+VERSION_MAJOR=3
+VERSION_MINOR=6.5
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+mkdir build-intel
+cd build-intel
+
+module pure
+module load intel
+module load compiler/latest
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-intel
+make -j 48 install || exit
+
+rm -fr ~/build/${NAME}-${VERSION}
+
