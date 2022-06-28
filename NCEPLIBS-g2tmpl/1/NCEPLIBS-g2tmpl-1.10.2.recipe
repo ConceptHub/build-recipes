@@ -1,0 +1,27 @@
+PACKAGE_NAME="NCEPLIBS-g2tmpl"
+INSTALL_NAME="NCEPLIBS-g2tmpl"
+MAJOR_VERSION=1
+MINOR_VERSION=10.2
+COMPILER="intel"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# Intel oneAPI
+
+module purge
+module load intel
+module load compiler/latest
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER}
+
+make -j 12 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+
