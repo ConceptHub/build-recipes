@@ -1,0 +1,27 @@
+NAME="NCEPLIBS-g2"
+INSTALL_NAME="NCEPLIBS-g2"
+VERSION_MAJOR=3
+VERSION_MINOR=4.5
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+mkdir build-intel
+cd build-intel
+
+module load intel
+module load compiler/latest
+module load jasper/3/3.0.5-intel
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native $CFLAGS" -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native $FCFLAGS $FFLAGS" -DJPEG_LIBRARY=/opt/software/libjepg-turbo/2/2.1.1/lib64/libturbojpeg.so -DJPEG_INCLUDE_DIR=/opt/software/libjepg-turbo/2/2.1.1/include -DJASPER_INCLUDE_DIR=/opt/software/jasper/3/3.0.5-intel/include -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-intel
+make -j 12 install || exit
+
+rm -fr ~/build/${NAME}-${VERSION}
+
