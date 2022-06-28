@@ -1,0 +1,33 @@
+PACKAGE_NAME="crtm"
+INSTALL_NAME="crtm"
+MAJOR_VERSION=2
+MINOR_VERSION=3-jedi.4
+COMPILER="intel"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+
+patch -p0 < ../crtm-2.3-jedi.4.CMakeLists.txt.patch
+
+cd build
+
+# Intel oneAPI
+
+module purge
+module load intel
+module load compiler/latest
+module load netcdf/fortran/4.5/latest-intel-hdf5_1.12_api_v112-intel_mpi
+module load ecbuild/3/3.6.0-intel
+
+cmake .. -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} -DNetCDF_Fortran_INCLUDE_DIR=/opt/software/netcdf-fortran-4.5.4-intel-hdf5_1.12-api_v112-intel_mpi/include -DNetCDF_Fortran_LIBRARY=/opt/software/netcdf-fortran-4.5.4-intel-hdf5_1.12-api_v112-intel_mpi/lib/libnetcdff.so
+
+make -j 12 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+
