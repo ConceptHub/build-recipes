@@ -1,0 +1,11 @@
+--- CMakeFiles/Export/lib64/cmake/crtm/crtm-targets.cmake.orig  2022-06-29 13:21:57.000000000 +0300
++++ CMakeFiles/Export/lib64/cmake/crtm/crtm-targets.cmake       022-06-29 03:04:59.000000000 +0300
+@@ -52,6 +52,7 @@
+
+ # Create imported target crtm
+ add_library(crtm SHARED IMPORTED)
++add_library(crtm::crtm ALIAS crtm)
+
+ set_target_properties(crtm PROPERTIES
+   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/module/crtm/Intel/2021.5.0.20211109"
+
