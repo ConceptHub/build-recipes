@@ -1,0 +1,11 @@
+--- src/CMakeFiles/Export/lib/cmake/bacio/bacio-targets.cmake.orig	2022-06-29 12:33:46.000000000 +0300
++++ src/CMakeFiles/Export/lib/cmake/bacio/bacio-targets.cmake	2022-06-29 03:00:33.000000000 +0300
+@@ -52,6 +52,7 @@
+
+ # Create imported target bacio::bacio
+ add_library(bacio::bacio STATIC IMPORTED)
++add_library(bacio::bacio_4 ALIAS bacio::bacio)
+
+ set_target_properties(bacio::bacio PROPERTIES
+   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+

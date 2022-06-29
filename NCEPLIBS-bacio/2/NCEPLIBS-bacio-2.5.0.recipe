@@ -19,7 +19,11 @@ module purge
 module load intel
 module load compiler/latest
 
-cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER}
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_Fortran_FLAGS="-mavx2 -fma -mtune=native" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
+
+make -j 12 || exit
+
+patch -p0 < ~/build/NCEPLIBS-bacio-2.5.0.bacio-targets.cmake.patch
 
 make -j 12 install || exit
 
