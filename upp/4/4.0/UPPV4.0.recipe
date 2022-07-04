@@ -1,0 +1,33 @@
+rm -fr ~/build/UPPV4.0
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+#wget https://dtcenter.org/sites/default/files/code/DTC_upp_v4.0.tar.gz
+tar xvf DTC_upp_v4.0.tar.gz
+cd UPPV4.0
+mkdir include
+mkdir lib
+mkdir bin
+
+export NETCDF=/opt/software/netcdf-4-bundle-intel/4.8.1-4.5.4-4.3.1
+
+module purge
+module load intel
+module load compiler/latest
+module load mpi/latest
+module load hdf5/1/1.12/latest-intel-zlib_1-szip-api_v112-intel_mpi
+module load jasper/2/2.0.23-intel
+module load libpng/1/latest
+
+cp ~/build/configure.4.0.upp configure.upp
+patch -p1 < ../enc_jpeg2000.c.patch
+./compile
+
+mkdir -p /opt/software/upp/4/4.0-intel
+rsync -vrtl ~/build/UPPV4.0/bin /opt/software/upp/4/4.0-intel/
+rsync -vrtl ~/build/UPPV4.0/parm /opt/software/upp/4/4.0-intel/
+rsync -vrtl ~/build/UPPV4.0/scripts /opt/software/upp/4/4.0-intel/
+rm -fr ~/build/UPPV4.0
+
