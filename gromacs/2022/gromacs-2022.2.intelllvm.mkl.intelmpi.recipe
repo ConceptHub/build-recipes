@@ -1,0 +1,72 @@
+MAJOR_VERSION=2022
+MINOR_VERSION=2
+PACKAGE_NAME='gromacs-'$MAJOR_VERSION.$MINOR_VERSION
+FILE_NAME=$PACKAGE_NAME'.tar.gz'
+CMAKE_BUILD_DIR_PREFIX='build'
+BUILD_DIR=~/build
+
+
+# ===
+
+CMAKE_BUILD_DIR=$BUILD_DIR/$PACKAGE_NAME/$CMAKE_BUILD_DIR_PREFIX
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+mkdir $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+module purge
+module load intel
+module load mkl/latest
+module load mpi/latest
+module load compiler/latest
+module load cmake/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/gromacs/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION-intelllvm-mkl-nogpu-intelmpi
+
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DGMX_MPI=ON -DGMX_OPENMP=ON -DGMX_GPU=OFF -DGMX_HWLOC=OFF -DGMX_OPENMP_MAX_THREADS=256 -DGMX_FFT_LIBRARY=mkl -DGMX_SIMD=AVX2_256 -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DBUILD_SHARED_LIBS=ON -DGMX_THREAD_MPI=OFF -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native" -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native"
+make -j48 install
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+mkdir $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+module purge
+module load intel
+module load mkl/latest
+module load compiler/latest
+module load cmake/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/gromacs/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION-intelllvm-mkl-nogpu-threadmpi
+
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DGMX_MPI=OFF -DGMX_OPENMP=ON -DGMX_GPU=OFF -DGMX_HWLOC=OFF -DGMX_OPENMP_MAX_THREADS=256 -DGMX_FFT_LIBRARY=mkl -DGMX_SIMD=AVX2_256 -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DBUILD_SHARED_LIBS=ON -DGMX_THREAD_MPI=OFF -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native" -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native"
+make -j48 install
+
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+mkdir $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+module purge
+module load intel
+module load mkl/latest
+module load compiler/latest
+module load cmake/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/gromacs/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION-intelllvm-mkl-nogpu-nompi
+
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DGMX_MPI=OFF -DGMX_OPENMP=ON -DGMX_GPU=OFF -DGMX_HWLOC=OFF -DGMX_OPENMP_MAX_THREADS=256 -DGMX_FFT_LIBRARY=mkl -DGMX_SIMD=AVX2_256 -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DBUILD_SHARED_LIBS=ON -DGMX_THREAD_MPI=ON -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native" -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native"
+make -j48 install
+
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+
