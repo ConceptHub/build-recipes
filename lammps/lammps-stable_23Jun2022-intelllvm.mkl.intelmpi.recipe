@@ -1,0 +1,39 @@
+LAMMPS_PKG_VERSION="stable_23Jun2022"
+LAMMPS_INSTALL_VERSION="20220623"
+PACKAGE_NAME='lammps-'${LAMMPS_PKG_VERSION}
+FILE_NAME=$PACKAGE_NAME'.tar.gz'
+CMAKE_BUILD_DIR_PREFIX='cmake/build'
+BUILD_DIR=~/build
+
+# ===
+
+CMAKE_BUILD_DIR=$BUILD_DIR/$PACKAGE_NAME/$CMAKE_BUILD_DIR_PREFIX
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+mkdir -p $CMAKE_BUILD_DIR
+cd $CMAKE_BUILD_DIR
+
+export LANG=C
+export LC_ALL=C
+
+module purge
+module load intel
+module load mkl/latest
+module load mpi/latest
+module load compiler/latest
+module load cmake/latest
+module load gcc/11/latest
+module load ffmpeg/latest
+
+INSTALL_PREFIX=/opt/software/lammps/${LAMMPS_INSTALL_VERSION}
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifort -DBUILD_LAMMPS_SHELL=OFF -DBUILD_TOOLS=ON -DPKG_OPENMP=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+make -j48 install
+cd ../..
+cp -pr examples ${INSTALL_PREFIX}/share/lammps/
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+
