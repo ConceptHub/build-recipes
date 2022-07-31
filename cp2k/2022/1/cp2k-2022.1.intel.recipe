@@ -1,0 +1,41 @@
+VERSION="2022.1"
+
+BUILD_DIR=~/build/
+
+rm -fr ${BUILD_DIR}/cp2k-${VERSION}
+tar xvf cp2k-${VERSION}.tar.gz
+cd ${BUILD_DIR}/cp2k-${VERSION}/tools/toolchain/
+
+export LANG=C
+export LC_ALL=C
+
+module purge
+module load cmake/latest
+module load intel
+module load compiler/latest
+module load mkl/latest
+module load mpi/latest
+module load openblas/latest-intel
+module load fftw/3/latest-intelmpi
+module load gcc/12/latest
+
+./install_cp2k_toolchain.sh --with-intelmpi=system --with-cmake=system --with-intel=system --with-mkl=system --with-spla=install || exit
+
+cp ${BUILD_DIR}/cp2k-${VERSION}/tools/toolchain/install/arch/* ${BUILD_DIR}/cp2k-${VERSION}/arch/
+
+cd ${BUILD_DIR}/cp2k-${VERSION}/exts
+rm -fr dbcsr
+git clone --recursive https://github.com/cp2k/dbcsr.git
+
+cd ${BUILD_DIR}/cp2k-${VERSION}
+
+patch -p0 < ../cp2k-${VERSION}.local.psmp.SpLA-1.5.4.lib.path.patch
+patch -p0 < ../cp2k-${VERSION}.local.pdbg.SpLA-1.5.4.lib.path.patch
+
+make -j 24 ARCH=local VERSION="ssmp sdbg psmp pdbg"
+
+mkdir -p /opt/software/cp2k/${VERSION}/bin
+
+rsync -vrtl ${BUILD_DIR}/cp2k-${VERSION}/exe/local/* /opt/software/cp2k/${VERSION}/bin/
+rsync -vrtl ${BUILD_DIR}/cp2k-${VERSION}/data /opt/software/cp2k/${VERSION}/
+
