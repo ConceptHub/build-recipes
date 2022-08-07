@@ -1,0 +1,39 @@
+PACKAGE_NAME="NCEPLIBS-wrf_io"
+INSTALL_NAME="NCEPLIBS-wrf_io"
+MAJOR_VERSION=1
+MINOR_VERSION=2.0
+COMPILER="gcc"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# GCC
+
+module purge
+module load openmpi/4/gcc/latest
+
+BUNDLE_DIR=/opt/software/netcdf-4-bundle-gcc
+
+export LD_LIBRARY_PATH=${BUNDLE_DIR}/lib:$LD_LIBRARY_PATH
+
+export LDFLAGS="-L${BUNDLE_DIR}/lib"
+
+export NETCDF=${BUNDLE_DIR}
+
+cmake .. -DCMAKE_C_COMPILER=gcc \
+         -DCMAKE_Fortran_COMPILER=gfortran \
+         -DCMAKE_C_FLAGS="-I${BUNDLE_DIR}/include -mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_Fortran_FLAGS="-I${BUNDLE_DIR}/include -mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} \
+         -DNetCDF_INCLUDE_DIRS=${BUNDLE_DIR}/include
+
+make -j 12 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+

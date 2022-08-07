@@ -1,0 +1,31 @@
+PACKAGE_NAME="NCEPLIBS-nemsio"
+INSTALL_NAME="NCEPLIBS-nemsio"
+MAJOR_VERSION=2
+MINOR_VERSION=5.4
+COMPILER="gcc"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# GCC
+
+module purge
+module load openmpi/4/gcc/latest
+module load NCEPLIBS-w3emc/2/2.9.2-gcc
+
+cmake .. -DCMAKE_Fortran_COMPILER=mpifort \
+         -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} \
+         -Dbacio_DIR=/opt/software/NCEPLIBS-bacio/2/2.5.0-gnu/lib/cmake/bacio \
+         -Dw3emc_DIR=/opt/software/NCEPLIBS-w3emc/2/2.9.2-gcc/lib/cmake/w3emc
+
+make -j 1 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+

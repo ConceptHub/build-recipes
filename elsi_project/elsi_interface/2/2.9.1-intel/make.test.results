@@ -1,0 +1,119 @@
+Running tests...
+Test project /root/build/elsi_interface/build
+      Start  1: test_fortran_01_elpa
+ 1/56 Test  #1: test_fortran_01_elpa .............   Passed    1.68 sec
+      Start  2: test_fortran_02_elpa
+ 2/56 Test  #2: test_fortran_02_elpa .............   Passed    1.72 sec
+      Start  3: test_fortran_03_elpa
+ 3/56 Test  #3: test_fortran_03_elpa .............   Passed    1.69 sec
+      Start  4: test_fortran_04_elpa
+ 4/56 Test  #4: test_fortran_04_elpa .............   Passed    1.67 sec
+      Start  5: test_fortran_05_elpa
+ 5/56 Test  #5: test_fortran_05_elpa .............   Passed    1.70 sec
+      Start  6: test_fortran_06_elpa
+ 6/56 Test  #6: test_fortran_06_elpa .............   Passed    1.76 sec
+      Start  7: test_fortran_07_elpa
+ 7/56 Test  #7: test_fortran_07_elpa .............   Passed    1.71 sec
+      Start  8: test_fortran_08_elpa
+ 8/56 Test  #8: test_fortran_08_elpa .............   Passed    1.77 sec
+      Start  9: test_fortran_09_elpa
+ 9/56 Test  #9: test_fortran_09_elpa .............   Passed    1.68 sec
+      Start 10: test_fortran_10_elpa
+10/56 Test #10: test_fortran_10_elpa .............   Passed    1.77 sec
+      Start 11: test_fortran_11_elpa
+11/56 Test #11: test_fortran_11_elpa .............   Passed    1.73 sec
+      Start 12: test_fortran_12_elpa
+12/56 Test #12: test_fortran_12_elpa .............   Passed    1.75 sec
+      Start 13: test_fortran_13_elpa
+13/56 Test #13: test_fortran_13_elpa .............   Passed    1.66 sec
+      Start 14: test_fortran_14_elpa
+14/56 Test #14: test_fortran_14_elpa .............   Passed    1.75 sec
+      Start 15: test_fortran_15_elpa
+15/56 Test #15: test_fortran_15_elpa .............   Passed    1.69 sec
+      Start 16: test_fortran_16_elpa
+16/56 Test #16: test_fortran_16_elpa .............   Passed    1.72 sec
+      Start 17: test_fortran_01_omm
+17/56 Test #17: test_fortran_01_omm ..............   Passed    1.62 sec
+      Start 18: test_fortran_02_omm
+18/56 Test #18: test_fortran_02_omm ..............   Passed    1.70 sec
+      Start 19: test_fortran_03_omm
+19/56 Test #19: test_fortran_03_omm ..............   Passed    1.70 sec
+      Start 20: test_fortran_04_omm
+20/56 Test #20: test_fortran_04_omm ..............   Passed    1.77 sec
+      Start 21: test_fortran_05_omm
+21/56 Test #21: test_fortran_05_omm ..............   Passed    1.62 sec
+      Start 22: test_fortran_06_omm
+22/56 Test #22: test_fortran_06_omm ..............   Passed    1.76 sec
+      Start 23: test_fortran_07_omm
+23/56 Test #23: test_fortran_07_omm ..............   Passed    1.62 sec
+      Start 24: test_fortran_08_omm
+24/56 Test #24: test_fortran_08_omm ..............   Passed    1.74 sec
+      Start 25: test_fortran_01_pexsi
+25/56 Test #25: test_fortran_01_pexsi ............   Passed    3.98 sec
+      Start 26: test_fortran_02_pexsi
+26/56 Test #26: test_fortran_02_pexsi ............   Passed    4.70 sec
+      Start 27: test_fortran_03_pexsi
+27/56 Test #27: test_fortran_03_pexsi ............   Passed    3.94 sec
+      Start 28: test_fortran_04_pexsi
+28/56 Test #28: test_fortran_04_pexsi ............   Passed    4.70 sec
+      Start 29: test_fortran_05_pexsi
+29/56 Test #29: test_fortran_05_pexsi ............   Passed    3.91 sec
+      Start 30: test_fortran_06_pexsi
+30/56 Test #30: test_fortran_06_pexsi ............   Passed    4.68 sec
+      Start 31: test_fortran_07_pexsi
+31/56 Test #31: test_fortran_07_pexsi ............   Passed    3.97 sec
+      Start 32: test_fortran_08_pexsi
+32/56 Test #32: test_fortran_08_pexsi ............   Passed    4.61 sec
+      Start 33: test_fortran_01_ntpoly
+33/56 Test #33: test_fortran_01_ntpoly ...........   Passed    2.06 sec
+      Start 34: test_fortran_02_ntpoly
+34/56 Test #34: test_fortran_02_ntpoly ...........   Passed    2.61 sec
+      Start 35: test_fortran_03_ntpoly
+35/56 Test #35: test_fortran_03_ntpoly ...........   Passed    2.11 sec
+      Start 36: test_fortran_04_ntpoly
+36/56 Test #36: test_fortran_04_ntpoly ...........   Passed    2.59 sec
+      Start 37: test_fortran_05_ntpoly
+37/56 Test #37: test_fortran_05_ntpoly ...........   Passed    2.02 sec
+      Start 38: test_fortran_06_ntpoly
+38/56 Test #38: test_fortran_06_ntpoly ...........   Passed    2.60 sec
+      Start 39: test_fortran_07_ntpoly
+39/56 Test #39: test_fortran_07_ntpoly ...........   Passed    2.09 sec
+      Start 40: test_fortran_08_ntpoly
+40/56 Test #40: test_fortran_08_ntpoly ...........   Passed    2.58 sec
+      Start 41: test_serial_01_lapack
+41/56 Test #41: test_serial_01_lapack ............   Passed    1.50 sec
+      Start 42: test_serial_02_lapack
+42/56 Test #42: test_serial_02_lapack ............   Passed    1.60 sec
+      Start 43: test_matio_01
+43/56 Test #43: test_matio_01 ....................   Passed    1.38 sec
+      Start 44: test_matio_02
+44/56 Test #44: test_matio_02 ....................   Passed    1.38 sec
+      Start 45: test_matio_03
+45/56 Test #45: test_matio_03 ....................   Passed    1.60 sec
+      Start 46: test_matio_04
+46/56 Test #46: test_matio_04 ....................   Passed    1.66 sec
+      Start 47: test_c_01_elpa
+47/56 Test #47: test_c_01_elpa ...................   Passed    1.65 sec
+      Start 48: test_c_02_elpa
+48/56 Test #48: test_c_02_elpa ...................   Passed    1.58 sec
+      Start 49: test_c_03_elpa
+49/56 Test #49: test_c_03_elpa ...................   Passed    1.60 sec
+      Start 50: test_c_04_elpa
+50/56 Test #50: test_c_04_elpa ...................   Passed    1.64 sec
+      Start 51: test_c_01_omm
+51/56 Test #51: test_c_01_omm ....................   Passed    1.64 sec
+      Start 52: test_c_02_omm
+52/56 Test #52: test_c_02_omm ....................   Passed    1.61 sec
+      Start 53: test_c_01_pexsi
+53/56 Test #53: test_c_01_pexsi ..................   Passed    2.20 sec
+      Start 54: test_c_02_pexsi
+54/56 Test #54: test_c_02_pexsi ..................   Passed    2.40 sec
+      Start 55: test_c_01_ntpoly
+55/56 Test #55: test_c_01_ntpoly .................   Passed    1.78 sec
+      Start 56: test_c_02_ntpoly
+56/56 Test #56: test_c_02_ntpoly .................   Passed    1.92 sec
+
+100% tests passed, 0 tests failed out of 56
+
+Total Test time (real) = 121.40 sec
+

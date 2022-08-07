@@ -1,0 +1,32 @@
+NAME="elsi"
+INSTALL_NAME="elsi_interface-v"
+MAJOR_VERSION="2"
+MINOR_VERSION="9.1"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+COMPILER_TYPE="intel"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${INSTALL_NAME}${VERSION}
+tar xvf ${INSTALL_NAME}${VERSION}.tar.gz
+cd ${INSTALL_NAME}${VERSION}
+
+module purge
+module load intel
+module load compiler/latest
+module load mpi/latest
+module load mkl/latest
+module load gcc/11/latest
+
+mkdir ~/build/${INSTALL_NAME}${VERSION}/build
+cd ~/build/${INSTALL_NAME}${VERSION}/build
+
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/intel.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER_TYPE}
+
+make -j 24 install || exit
+
+cd ~/build
+rm -fr ~/build/${INSTALL_NAME}${VERSION}/
+

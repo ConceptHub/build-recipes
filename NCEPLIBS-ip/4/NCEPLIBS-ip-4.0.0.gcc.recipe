@@ -1,0 +1,32 @@
+PACKAGE_NAME="NCEPLIBS-ip"
+INSTALL_NAME="NCEPLIBS-ip"
+MAJOR_VERSION=4
+MINOR_VERSION=0.0
+COMPILER="gcc"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# GCC
+
+module purge
+module load openmpi/4/gcc/latest
+module load NCEPLIBS-sp/2/2.3.3-gcc
+
+cmake .. -DCMAKE_C_COMPILER=mpicc \
+         -DCMAKE_Fortran_COMPILER=mpifort \
+         -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} \
+         -Dsp_DIR=/opt/software/NCEPLIBS-sp/2/2.3.3-gcc/lib/cmake/sp
+
+make -j 1 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+

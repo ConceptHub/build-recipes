@@ -1,0 +1,36 @@
+PACKAGE_NAME="NCEPLIBS-bacio"
+INSTALL_NAME="NCEPLIBS-bacio"
+MAJOR_VERSION=2
+MINOR_VERSION=5.0
+COMPILER="gnu"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build || exit
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+tar xvf ${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}.tar.gz || exit
+mkdir ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build || exit
+cd ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}/build
+
+# GNU
+
+module purge
+module load gcc/11/latest
+
+cmake .. -DCMAKE_C_COMPILER=gcc \
+         -DCMAKE_Fortran_COMPILER=gfortran \
+         -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native" \
+         -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}-${COMPILER} \
+         -DBUILD_SHARED_LIBS=ON \
+         -DBUILD_STATIC_LIBS=OFF
+
+make -j 12 || exit
+
+patch -p0 < ~/build/NCEPLIBS-bacio-2.5.0.bacio-targets.cmake.patch
+
+make -j 12 install || exit
+
+rm -fr ~/build/${PACKAGE_NAME}-${MAJOR_VERSION}.${MINOR_VERSION}
+

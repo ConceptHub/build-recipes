@@ -1,0 +1,46 @@
+NAME="NCEPLIBS-g2"
+INSTALL_NAME="NCEPLIBS-g2"
+VERSION_MAJOR=3
+VERSION_MINOR=4.5
+COMPILER="gcc"
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+mkdir build-gcc
+cd build-gcc
+
+module load nvidia
+module load gcc/12/latest
+
+BUNDLE_DIR=/opt/software/netcdf-4-bundle-gcc
+
+export LD_LIBRARY_PATH=${BUNDLE_DIR}/lib:$LD_LIBRARY_PATH
+
+export LDFLAGS="-L${BUNDLE_DIR}/lib"
+
+export CFLAGS="-I${BUNDLE_DIR}/include"
+export FCFLAGS="-I${BUNDLE_DIR}/include"
+export LDFLAGS="-L${BUNDLE_DIR}/lib"
+
+cmake .. -DCMAKE_C_COMPILER=gcc \
+         -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC" \
+         -DCMAKE_Fortran_COMPILER=gfortran \
+         -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC" \
+         -DJPEG_INCLUDE_DIR=${BUNDLE_DIR}/include \
+         -DJASPER_INCLUDE_DIR=${BUNDLE_DIR}/include \
+         -DJPEG_LIBRARY=${BUNDLE_DIR}/lib/libjpeg.so \
+         -DJPEG_LIBRARIES=${BUNDLE_DIR}/lib64/libjasper.so \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+make -j 12 install || exit
+
+rm -fr ~/build/${NAME}-${VERSION}
+
