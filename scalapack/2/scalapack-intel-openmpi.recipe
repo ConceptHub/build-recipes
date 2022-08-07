@@ -1,0 +1,19 @@
+tar xvf scalapack-2.1.0.tar.gz
+cd scalapack-2.1.0
+rm -fr build
+mkdir build
+cd build
+module purge
+module load cmake/latest
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/latest
+export I_MPI_CC=icc
+export I_MPI_CXX=icpc
+export I_MPI_FC=ifort
+export LANG=C
+export LC_ALL=C
+export MPI_BASE_DIR=/opt/software/openmpi/4.1.1-intel
+cmake .. -DLAPACK_LIBRARIES=/opt/software/openblas/0.3.20-intel/lib/libopenblas.so -DBLAS_LIBRARIES=/opt/software/openblas/0.3.20-intel/lib/libopenblas.so -DCMAKE_Fortran_FLAGS="-fallow-argument-mismatch" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/scalapack/2/2.1.0-intel-openmpi -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifort -DMPI_BASE_DIR=/opt/software/openmpi/4.1.1-intel
+make -j 128 && make install
+
