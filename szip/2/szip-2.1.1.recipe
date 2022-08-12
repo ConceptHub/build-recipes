@@ -1,0 +1,75 @@
+NAME="szip"
+INSTALL_NAME="szip"
+MAJOR_VERSION="2"
+MINOR_VERSION="1.1"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr $NAME-$VERSION
+tar xvf $INSTALL_NAME-$VERSION.tar.gz
+cd $NAME-$VERSION
+
+# NVIDIA HPC SDK
+
+# NO BUILD FOR NVIDIA HPC SDK - tests fail
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load intel
+module load compiler/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-mavx2 -mfma -static-intel" -DCMAKE_CXX_COMPILER=icpc -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+# AMD AOCC
+
+COMPILER="aocc"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load amd/aocc/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-march=znver2 -mtune=znver2" -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+# GNU GCC
+
+COMPILER="gcc"
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+module load gcc/12/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}
+
