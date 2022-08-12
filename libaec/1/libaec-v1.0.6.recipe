@@ -1,0 +1,90 @@
+NAME="libaec"
+INSTALL_NAME="libaec"
+MAJOR_VERSION="1"
+MINOR_VERSION="0.6"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr $NAME-$VERSION
+mkdir -p ${NAME}-${VERSION}
+tar xvf ${NAME}-v${VERSION}.tar.bz2 --strip-components=1 -C ${NAME}-${VERSION}
+cd $NAME-$VERSION
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=nvc -DCMAKE_C_FLAGS="-tp zen2 -Mcache_align -fma -Mvect=simd:256 -static-nvidia" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load intel
+module load compiler/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-mavx2 -mfma -static-intel" -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+# AMD AOCC
+
+COMPILER="aocc"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load amd/aocc/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-march=znver2 -mtune=znver2" -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+# GNU GCC
+
+COMPILER="gcc"
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+module load gcc/12/latest
+
+mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
+cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
+
+cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+make -j 12 install || exit
+
+cd ~/build
+
+rm -fr ~/build/${NAME}-${VERSION}
+
