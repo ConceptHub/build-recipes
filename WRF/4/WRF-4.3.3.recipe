@@ -1,0 +1,37 @@
+NAME="WRF"
+INSTALL_NAME="WRF"
+MAJOR_VERSION="4"
+MINOR_VERSION="3.3"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+
+module purge
+module load nvidia
+module load openmpi/4/nvidia/latest
+
+PATH=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia/bin:$PATH
+NETCDF=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
+HDF5=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
+
+printf "55\n1\n" | ./configure
+
+patch -p0 < ../4.3.3.configure.wrf.basic.patch
+
+./compile -j 4 em_real
+
+exit
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+
