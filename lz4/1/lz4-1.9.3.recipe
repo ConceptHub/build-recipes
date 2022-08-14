@@ -1,0 +1,27 @@
+NAME="lz4"
+INSTALL_NAME="lz4"
+MAJOR_VERSION="1"
+MINOR_VERSION="9.3"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+
+CC=gcc CFLAGS='-O3'
+
+make -j 24 install prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+
