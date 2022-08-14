@@ -18,7 +18,7 @@ COMPILER="gcc"
 module purge
 module load gcc/12/latest
 
-CC=gcc CFLAGS='-O3'
+CC=gcc CFLAGS ?= '-O3'
 
 make -j 24 install prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
