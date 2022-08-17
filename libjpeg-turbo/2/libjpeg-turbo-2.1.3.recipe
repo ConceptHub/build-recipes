@@ -24,7 +24,7 @@ module load gcc/12/latest
 mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
 cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
 
-cmake .. -DCMAKE_C_COMPILER=nvc -DCMAKE_C_FLAGS="-O3 -Mvect=simd:256 -Mcache_align -fma" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake .. -DCMAKE_C_COMPILER=nvc -DCMAKE_C_FLAGS="-O3 -Mvect=simd:256 -Mcache_align -fma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 make -j 12 install || exit
 
 cd ~/build
@@ -43,7 +43,7 @@ module load compiler/latest
 mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
 cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
 
-cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-xHost -mtune=native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake .. -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-O3 -march=core-avx2 -mfma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 make -j 12 install || exit
 
 cd ~/build
@@ -62,7 +62,7 @@ module load amd/aocc/latest
 mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
 cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
 
-cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-O3 -march=znver2 -mtune=native" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-O3 -march=znver2 -mtune=native -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 make -j 12 install || exit
 
 cd ~/build
@@ -80,7 +80,7 @@ module load gcc/12/latest
 mkdir ~/build/${NAME}-${VERSION}/build-${COMPILER}
 cd ~/build/${NAME}-${VERSION}/build-${COMPILER}
 
-cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-O3 -mavx2 -mfma" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-O3 -mavx2 -mfma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 make -j 12 install || exit
 
 cd ~/build
