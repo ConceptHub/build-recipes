@@ -1,0 +1,43 @@
+NAME='tinker'
+MAJOR_VERSION=8
+MINOR_VERSION=10.2
+PACKAGE_NAME=$NAME
+
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+FILE_NAME=$NAME-${VERSION}'.tar.gz'
+
+
+# ===
+
+COMPILER='nvidia'
+
+cd $BUILD_DIR
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+INSTALL_PREFIX=/opt/software/$NAME/$MAJOR_VERSION/${VERSION}-${COMPILER}
+
+export LANG=C
+export LC_ALL=C
+
+mkdir -p ~/build/$PACKAGE_NAME/build
+cd ~/build/$PACKAGE_NAME/build
+
+cmake ../cmake -DCMAKE_Fortran_COMPILER=nvfortran -DFFTW_LIB=/opt/software/fftw/3/3.3.10-nvidia-openmpi/lib/libfftw3.so -DFFTW_THREADED_LIB=/opt/software/fftw/3/3.3.10-nvidia-openmpi/lib/libfftw3_omp.so -DCMAKE_BUILD_TYPE=Release -DCMAKE_Fortran_FLAGS_RELEASE='-O3 -tp zen2 -Mcache_align -fma' -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+make -j 24 install || exit
+
+cp -pr ../params ${INSTALL_PREFIX}/
+cp -pr ../example ${INSTALL_PREFIX}/
+cp -pr ../bench ${INSTALL_PREFIX}/
+cp -pr ../test ${INSTALL_PREFIX}/
+
+cd ~/build
+rm -fr ~/build/$PACKAGE_NAME
+
