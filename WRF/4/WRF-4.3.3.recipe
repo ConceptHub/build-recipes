@@ -15,7 +15,7 @@ cd ${INSTALL_NAME}-${VERSION}
 
 # NVIDIA HPC SDK
 
-COMPILER="nvidia"
+COMPILER="nvidia-openmpi"
 
 module purge
 module load nvidia
