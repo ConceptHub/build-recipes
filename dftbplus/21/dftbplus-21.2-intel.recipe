@@ -1,0 +1,48 @@
+NAME='dftbplus'
+
+MAJOR_VERSION=21
+MINOR_VERSION=2
+
+
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+PACKAGE_NAME=$NAME-${VERSION}
+
+FILE_NAME=${PACKAGE_NAME}'.tar.xz'
+
+
+# ===
+
+COMPILER='intel'
+
+cd $BUILD_DIR
+
+echo $BUILD_DIR
+
+rm -fr $PACKAGE_NAME
+tar xvf $FILE_NAME
+
+module purge
+module load intel
+module load compiler/latest
+module load mpi/latest
+module load mkl/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/$NAME/$MAJOR_VERSION/${VERSION}-${COMPILER}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build/$PACKAGE_NAME
+
+cmake -B build-intel -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifort -DWITH_UNIT_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DWITH_MPI=ON -DCMAKE_C_FLAGS="-march=core-avx2 -mfma" -DCMAKE_Fortran_FLAGS="-march=core-avx2 -mfma" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-intel -- -j
+cmake --install build-intel
+
+
+cd ~/build
+rm -fr ~/build/$PACKAGE_NAME
+
