@@ -1,0 +1,53 @@
+NAME="wrf"
+INSTALL_NAME="WRF"
+MAJOR_VERSION="4"
+MINOR_VERSION="4.0"
+GIT_VERSION="4.4"
+
+VERSION_ACT=${MAJOR_VERSION}.${MINOR_VERSION}
+
+MINOR_VERSION="4"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${INSTALL_NAME}
+git clone --branch release-v${GIT_VERSION} https://github.com/wrf-model/WRF.git
+cd ${INSTALL_NAME}
+
+# NVIDIA HPC SDK
+
+COMPILER="nvidia-openmpi"
+
+module purge
+module load nvidia
+module load openmpi/4/nvidia/latest
+
+export PATH=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia/bin:$PATH
+export NETCDF=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
+export HDF5=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
+
+printf "55\n1\n" | ./configure
+
+patch -p0 < ../WRF-${GIT_VERSION}.configure.wrf.basic.patch
+
+./compile -j 4 em_real
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION_ACT}-${COMPILER}
+
+mkdir -p ${INSTALL_PREFIX}/main
+
+cd ${INSTALL_PREFIX}
+
+ln -s main bin
+
+cp ~/build/${INSTALL_NAME}/main/*.exe ${INSTALL_PREFIX}/main/
+
+cp -r --preserve=links ~/build/${INSTALL_NAME}/run ${INSTALL_PREFIX}/
+
+cd ~/build
+rm -fr ${INSTALL_NAME}
+
