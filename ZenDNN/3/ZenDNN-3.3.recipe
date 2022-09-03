@@ -1,0 +1,35 @@
+NAME='ZenDNN'
+INSTALL_NAME='zendnn'
+MAJOR_VERSION=3
+MINOR_VERSION=3
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+PACKAGE_NAME=${NAME}-${VERSION}
+PACKAGE_FILE=${PACKAGE_NAME}.tar.gz
+
+# ===
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
+tar xvf ${PACKAGE_FILE}
+cd ${PACKAGE_NAME}
+
+INSTALL_PREFIX=/opt/software/amd/${INSTALL_NAME}/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION
+
+module purge
+module load amd/aocc/latest
+
+make -j 24 RELEASE=1 ARCHIVE=1 ZENDNN_ENABLE_LIBM=1 ZENDNN_BLIS_PATH=/opt/software/amd/aocl/3.1.0 ZENDNN_LIBM_PATH=/opt/software/amd/aocl/3.1.0
+
+make -j 24 test RELEASE=1 ARCHIVE=1 ZENDNN_ENABLE_LIBM=1 ZENDNN_BLIS_PATH=/opt/software/amd/aocl/3.1.0 ZENDNN_LIBM_PATH=/opt/software/amd/aocl/3.1.0
+
+rm -fr ${INSTALL_PREFIX}
+mkdir -p ${INSTALL_PREFIX}/bin ${INSTALL_PREFIX}/lib
+cp _out/lib/* ${INSTALL_PREFIX}/lib/
+cp _out/tests/* ${INSTALL_PREFIX}/bin/
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
+
