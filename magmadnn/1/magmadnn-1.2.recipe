@@ -1,0 +1,96 @@
+# wget https://github.com/MagmaDNN/magmadnn/archive/refs/tags/v1.2.tar.gz -O magmadnn-1.2.tar.gz
+
+NAME="magmadnn"
+INSTALL_NAME="magmadnn"
+VERSION_MAJOR=1
+VERSION_MINOR=2
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+BUILDDIR=~/build
+
+cd ${BUILDDIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+
+COMPILER='intel'
+
+module purge
+module load cmake/latest
+module load gcc/11/latest # Intel C++ compiler does not employ properly GCC 12. Using GCC 11 is the only possiblity here.
+module load intel
+module load compiler/latest
+module load mkl/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_BUILD_TYPE=Release -DMAGMADNN_BUILD_TESTS=ON -DCMAKE_C_FLAGS="-O3 -march=core-avx2 -prec-div -fp-model=strict" -DCMAKE_CXX_FLAGS="-O3 -march=core-avx2 -prec-div -fp-model=strict" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# NVIDIA HPC SDK
+
+COMPILER='nvidia'
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load blas/latest-nvidia
+module load lapack/latest-nvidia
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=nvc -DCMAKE_CXX_COMPILER=nvc++ -DCMAKE_BUILD_TYPE=Release -DMAGMADNN_BUILD_TESTS=ON -DCMAKE_C_FLAGS="-march=core-avx2 -mfma" -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# AMD AOCC
+
+COMPILER='aocc'
+
+module purge
+module load amd/aocc/latest
+module load amd/aocl/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DMAGMADNN_BUILD_TESTS=ON -DCMAKE_C_FLAGS="-march=core-avx2 -mfma" -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# GNU GCC
+
+COMPILER='gcc'
+
+module purge
+module load gcc/12/latest
+module load blas/latest-gcc
+module load lapack/latest-gcc
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DMAGMADNN_BUILD_TESTS=ON -DCMAKE_C_FLAGS="-march=core-avx2 -mfma" -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+cd ${BUILDDIR}
+rm -fr ${NAME}-${VERSION}
+
