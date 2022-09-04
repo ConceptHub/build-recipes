@@ -1,0 +1,90 @@
+# wget https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/2.1.4.tar.gz -O libjpeg-turbo-2.1.4.tar.gz
+
+NAME="libjpeg-turbo"
+INSTALL_NAME="libjpeg-turbo"
+MAJOR_VERSION="2"
+MINOR_VERSION="1.4"
+BUILDDIR=~/build
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILDDIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=nvc -DCMAKE_C_FLAGS="-O3 -Mvect=simd:256 -Mcache_align -fma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load intel
+module load compiler/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-O3 -march=core-avx2 -mfma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load amd/aocc/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-O3 -march=znver2 -mtune=native -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-O3 -mavx2 -mfma -fPIC" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+
+cd ${BUILDDIR}
+
+rm -fr ${BUILDDIR}/${NAME}-${VERSION}
