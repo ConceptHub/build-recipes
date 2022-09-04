@@ -1,0 +1,37 @@
+NAME='qe'
+INSTALL_NAME='qe'
+MAJOR_VERSION=7
+MINOR_VERSION=1
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+PACKAGE_NAME=${NAME}-${VERSION}
+PACKAGE_FILE=${PACKAGE_NAME}-ReleasePack.tar.gz
+
+# ===
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
+tar xvf ${PACKAGE_FILE}
+cd ${PACKAGE_NAME}
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
+module load blas/latest-nvidia
+module load lapack/latest-nvidia
+module load openmpi/4/nvidia/latest
+module load fftw/3/latest-nvidia-openmpi
+
+INSTALL_PREFIX=/opt/software/amd/${INSTALL_NAME}/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpifort -DCMAKE_C_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" -DCMAKE_Fortran_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" -DQE_ENABLE_OPENMP=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 48 || exit
+#ctest --test-dir build-${COMPILER} || exit
+cmake --install build-${COMPILER}
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
