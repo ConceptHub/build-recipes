@@ -96,8 +96,8 @@ make distclean
 
 SIMD="--enable-avx2"
 OPTS="--enable-openmp --enable-shared"
-CFLAGS="-tp zen2 -Mcache_align -fast -Mvect -mavx2"
-FFLAGS="-tp zen2 -Mcache_align -fast -Mvect -mavx2"
+CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
+FFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
 
 COMPILER='nvidia'
 MPI_VENDOR='openmpi'
