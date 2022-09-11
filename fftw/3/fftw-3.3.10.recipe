@@ -1,0 +1,282 @@
+NAME='fftw'
+INSTALL_NAME='fftw'
+MAJOR_VERSION=3
+MINOR_VERSION=3.10
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILDDIR=~/build
+
+rm -fr ${INSTALL_NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${INSTALL_NAME}-${VERSION}
+
+# NOTE: No need to specify MPI compiler. Once --enable-mpi is specified, the configure
+#       script detects which mpicc compiler to use, based on the paths set by the
+#       environment module.
+
+
+# Intel oneAPI / IntelMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS=""
+FFLAGS=""
+
+COMPILER='intel'
+MPI_VENDOR='intelmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load intel
+module load compiler/latest
+module load mpi/latest
+
+CC=icc
+CXX=icpc
+F77=ifort
+MPICC=mpiicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is not supported
+
+
+# Intel oneAPI / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS=""
+FFLAGS=""
+
+COMPILER='intel'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/latest
+
+CC=icc
+CXX=icpc
+F77=ifort
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is not supported
+
+
+# NVIDIA HPC SDK / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-tp zen2 -Mcache_align -fast -Mvect -mavx2"
+FFLAGS="-tp zen2 -Mcache_align -fast -Mvect -mavx2"
+
+COMPILER='nvidia'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load nvidia
+module load openmpi/4/nvidia/latest
+
+CC=nvc
+CXX=nvc++
+F77=nvfortran
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is not supported
+
+
+# GCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-march=znver2 -mtune=native"
+FFLAGS="-march=znver2 -mtune=native"
+
+COMPILER='gcc'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load gcc/11/latest
+module load mpich/3/gcc/latest
+
+CC=gcc
+CXX=g++
+F77=gfortran
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is supported by GCC but not in MPI
+./configure ${OPTS} --enable-threads --enable-quad-precision CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# GCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-march=znver2 -mtune=native"
+FFLAGS="-march=znver2 -mtune=native"
+
+COMPILER='gcc'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load gcc/11/latest
+module load openmpi/4/gcc/latest
+
+CC=gcc
+CXX=g++
+F77=gfortran
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is supported by GCC but not in MPI
+./configure ${OPTS} --enable-threads --enable-quad-precision CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# AOCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-march=znver2 -mtune=native"
+FFLAGS="-march=znver2 -mtune=native"
+
+COMPILER='aocc'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load amd/aocc/3/latest
+module load mpich/3/aocc/latest
+
+CC=clang
+CXX=clang++
+F77=flang
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# There is no quad precission support in MPI, neither there is a support for AMD AOCC LLVM.
+
+
+# AOCC / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-march=znver2 -mtune=native"
+FFLAGS="-march=znver2 -mtune=native"
+
+COMPILER='aocc'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+
+module purge
+module load amd/aocc/3/latest
+module load openmpi/4/aocc/latest
+
+CC=clang
+CXX=clang++
+F77=flang
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+
+# There is no quad precission support in MPI, neither there is a support for AMD AOCC LLVM.
+
+cd ${BUILDDIR}
+rm -fr ${INSTALL_NAME}-${VERSION}
