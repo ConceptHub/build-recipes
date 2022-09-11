@@ -1,0 +1,197 @@
+NAME='fftw'
+INSTALL_NAME='fftw'
+MAJOR_VERSION=2
+MINOR_VERSION=1.5
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILDDIR=~/build
+
+rm -fr ${INSTALL_NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${INSTALL_NAME}-${VERSION}
+
+
+# Intel oneAPI / IntelMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-mfma"
+FFLAGS_="-mfma"
+
+COMPILER='intel'
+MPI_VENDOR='intelmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load intel
+module load compiler/latest
+module load mpi/latest
+
+CC=icc
+CXX=icpc
+F77=ifort
+MPICC=mpiicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# Intel oneAPI / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-mfma"
+FFLAGS_="-mfma"
+
+COMPILER='intel'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/latest
+
+CC=icc
+CXX=icpc
+F77=ifort
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# NVIDIA HPC SDK / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-tp=zen2"
+FFLAGS_="-tp=zen2"
+
+COMPILER='nvidia'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load nvidia
+module load
+module load openmpi/4/nvidia/latest
+
+CC=nvc
+CXX=nvc++
+F77=nvfortran
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# GCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-march=znver2"
+FFLAGS_="-march=znver2"
+
+COMPILER='gcc'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load gcc/11/latest
+module load mpich/3/gcc/latest
+
+CC=gcc
+CXX=g++
+F77=gfortran
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# GCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-march=znver2"
+FFLAGS_="-march=znver2"
+
+COMPILER='gcc'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load gcc/11/latest
+module load openmpi/4/gcc/latest
+
+CC=gcc
+CXX=g++
+F77=gfortran
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# AOCC / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-march=znver2"
+FFLAGS_="-march=znver2"
+
+COMPILER='aocc'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load amd/aocc/3/latest
+module load mpich/3/aocc/latest
+
+CC=clang
+CXX=clang++
+F77=flang
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+# AOCC / OpenMPI
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS_="-march=znver2"
+FFLAGS_="-march=znver2"
+
+COMPILER='aocc'
+MPI_VENDOR='openmpi'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load amd/aocc/3/latest
+module load openmpi/4/aocc/latest
+
+CC=clang
+CXX=clang++
+F77=flang
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-shared --enable-type-prefix --with-openmp CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} CFLAGS=${CFLAGS_} FFLAGS=${FFLAGS_} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+
+cd ${BUILDDIR}
+rm -fr ${INSTALL_NAME}-${VERSION}
