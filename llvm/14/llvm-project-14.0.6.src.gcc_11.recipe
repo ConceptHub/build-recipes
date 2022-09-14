@@ -21,7 +21,7 @@ module purge
 module load cmake/latest
 module load gcc/11/latest
 
-INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
 cmake -S llvm -B build-${COMPILER} -G "Unix Makefiles" -DLLVM_USE_SANITIZER=Address -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;flang;libclc;lld;lldb;mlir;openmp;polly;pstl" -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt;libc" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
 cmake --build build-${COMPILER} -j 48
