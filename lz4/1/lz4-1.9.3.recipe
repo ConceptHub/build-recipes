@@ -10,7 +10,51 @@ export LC_ALL=C
 cd ~/build
 rm -fr ${NAME}-${VERSION}
 tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
-cd ${NAME}-${VERSION}
+cd ${NAME}-${VERSION}/
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+rm -fr ${INSTALL_PREFIX}
+CC=nvc make install prefix=${INSTALL_PREFIX}
+
+make clean
+
+cd build/cmake
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC" -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC" -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
+
 
 # GNU GCC
 COMPILER="gcc"
@@ -18,10 +62,14 @@ COMPILER="gcc"
 module purge
 module load gcc/12/latest
 
-CC=gcc CFLAGS ?= '-O3'
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
-make -j 24 install prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC" -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
 
+
+# Clean
 cd ~/build
 rm -fr ${NAME}-${VERSION}
 
