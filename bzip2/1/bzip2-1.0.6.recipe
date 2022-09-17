@@ -1,0 +1,89 @@
+NAME="bzip2"
+INSTALL_NAME="bzip2"
+MAJOR_VERSION="1"
+MINOR_VERSION="0.6"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+patch -p0 < ../${NAME}-${VERSION}.Makefile.${COMPILER}.patch
+
+make install PREFIX=${INSTALL_PREFIX}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load intel
+module load compiler/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+patch -p0 < ../${NAME}-${VERSION}.Makefile.${COMPILER}.patch
+
+make install PREFIX=${INSTALL_PREFIX}
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load amd/aocc/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+patch -p0 < ../${NAME}-${VERSION}.Makefile.${COMPILER}.patch
+
+make install PREFIX=${INSTALL_PREFIX}
+
+
+# GNU GCC
+COMPILER="gcc"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load gcc/12/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+patch -p0 < ../${NAME}-${VERSION}.Makefile.${COMPILER}.patch
+
+make install PREFIX=${INSTALL_PREFIX}
+
+# Clean
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
