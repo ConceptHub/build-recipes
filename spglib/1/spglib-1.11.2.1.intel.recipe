@@ -1,0 +1,29 @@
+NAME="spglib"
+MAJOR_VERSION="1"
+MINOR_VERSION="11.2.1"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load cmake/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-qopenmp -march=core-avx2 -fma -fPIC" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+cd ..
+rm -fr ${NAME}-${VERSION}
+
