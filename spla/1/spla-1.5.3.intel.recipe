@@ -1,0 +1,39 @@
+NAME="spla"
+MAJOR_VERSION="1"
+MINOR_VERSION="5.3"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# Intel oneAPI / OpenMPI
+
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load intel
+module load compiler/latest
+module load openblas/0.3.20-intel
+module load gcc/12/latest
+module load cmake/latest
+module load ${MPI}/4/${COMPILER}/latest
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
+                           -DCMAKE_CXX_COMPILER=icpc \
+                           -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma -fPIC" \
+                           -DBUILD_SHARED_LIBS=ON \
+                           -DSPLA_BUILD_TESTS=OFF \
+                           -DCMAKE_BUILD_TYPE=Release \
+                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
