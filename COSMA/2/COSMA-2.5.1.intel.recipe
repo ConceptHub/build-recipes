@@ -22,14 +22,26 @@ ln -s ../../${COSTA_NAME}-${COSTA_VERSION} ${COSTA_NAME}
 cd ..
 
 COMPILER="intel"
+MPI="openmpi"
+
+#module purge
+#module load intel
+#module load compiler/latest
+#module load gcc/12/latest
+#module load openblas/0.3.20-${COMPILER}
+#module load cmake/latest
+#module load scalapack/2/2.2.0-${COMPILER}-${MPI}
+
 
 module purge
 module load intel
 module load compiler/latest
 module load gcc/12/latest
-module load openblas/0.3.20-intel
+module load openblas/0.3.20-${COMPILER}
 module load cmake/latest
-module load scalapack/2/2.2.0-intel-openmpi
+module load scalapack/2/2.2.0-${COMPILER}-${MPI}
+
+
 
 cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
                            -DCMAKE_C_FLAGS="-march=core-avx2 -mfma -fPIC ${CFLAGS}" \
@@ -41,8 +53,8 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
                            -DCOSTA_SCALAPACK=CUSTOM \
                            -DCOSMA_WITH_TESTS=NO \
                            -DCOSMA_WITH_APPS=NO \
-                           -DSCALAPACK_LIBRARIES=/opt/software/scalapack/2/2.1.0-intel-openmpi/lib/libscalapack.so \
-                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+                           -DSCALAPACK_LIBRARIES=/opt/software/scalapack/2/2.1.0-${COMPILER}-${MPI}/lib/libscalapack.so \
+                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
 cmake --build build-${COMPILER} -j 12
 cmake --install build-${COMPILER}
 
