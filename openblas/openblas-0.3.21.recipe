@@ -1,7 +1,7 @@
 NAME="OpenBLAS"
 INSTALL_NAME="openblas"
 MAJOR_VERSION="0"
-MINOR_VERSION="3.21"
+MINOR_VERSION="3.20"
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 BUILD_ROOT=~/build
@@ -87,7 +87,7 @@ tar xvf ${NAME}-${VERSION}.tar.gz
 cd ${NAME}-${VERSION}
 
 module purge
-module load gcc/12/latest
+module load gcc/11/latest
 
 CC=gcc
 FC=gfortran
