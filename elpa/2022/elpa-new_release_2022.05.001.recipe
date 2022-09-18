@@ -1,0 +1,47 @@
+NAME="elpa"
+MAJOR_VERSION="2022"
+MINOR_VERSION="05.001"
+VERSION_PREFIX="new_release_"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION_PREFIX}${VERSION}
+tar xvf ${NAME}-${VERSION_PREFIX}${VERSION}.tar.gz
+cd ${NAME}-${VERSION_PREFIX}${VERSION}
+
+sh autogen.sh
+
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load scalapack/2/2.2.0-${COMPILER}-${MPI}
+module load openblas/0.3.20-${COMPILER}
+
+mkdir build-${COMPILER}
+cd build-${COMPILER}
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+../configure --prefix=${INSTALL_PREFIX} \
+          --enable-openmp=${enable_openmp} \
+          --enable-shared=yes \
+          --enable-static=yes \
+          --enable-avx=yes --enable-avx2=yes --enable-avx512=no \
+          --enable-nvidia-gpu=no \
+          OMPI_MCA_plm_rsh_agent=/bin/false \
+          FC=mpifort \
+          CC=mpicc \
+          CXX=mpic++ \
+          FCFLAGS="${FCFLAGS} -mavx2 -mfma -msse4" \
+          CFLAGS="${CFLAGS} -mavx2 -mfma -msse4" \
+          CXXFLAGS="${CXXFLAGS} -mavx2 -mfma -msse4" \
+          LDFLAGS="-Wl,--allow-multiple-definition -Wl,--enable-new-dtags ${LDFLAGS}"
+
+make -j 24 install || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION_PREFIX}${VERSION}
+
