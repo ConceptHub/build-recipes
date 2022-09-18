@@ -5,27 +5,11 @@ MINOR_VERSION="1.x"
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 
+
 # Exports useful for compiling inside a container
 
 export LANG=C
 export LC_ALL=C
-
-
-# LLVM
-
-COMPILER='llvm'
-
-module purge
-module load llvm/latest-gcc
-
-cd ~/build
-rm -fr ${NAME}-${VERSION}
-tar xvf ${INSTALL_NAME}-${VERSION}.tar.bz2 2>&1 > /dev/null
-cd ${NAME}-${VERSION}
-
-CC=clang GXX=clang++ FC=flang FCFLAGS="-fallow-argument-mismatch" ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
-
-make -j 24 install || exit
 
 
 # Intel oneAPI
@@ -42,7 +26,7 @@ rm -fr ${NAME}-${VERSION}
 tar xvf ${INSTALL_NAME}-${VERSION}.tar.bz2 2>&1 > /dev/null
 cd ${NAME}-${VERSION}
 
-CC=icc GXX=icpc FC=ifort ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+CC=icc CXX=icpc FC=ifort ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
 make -j 24 install  || exit
 
 
@@ -58,7 +42,7 @@ rm -fr ${NAME}-${VERSION}
 tar xvf ${INSTALL_NAME}-${VERSION}.tar.bz2 2>&1 > /dev/null
 cd ${NAME}-${VERSION}
 
-CC=clang GXX=clang++ FC=flang ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+CC=clang CXX=clang++ FC=flang ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
 make -j 24 install  || exit
 
 
@@ -74,7 +58,7 @@ rm -fr ${NAME}-${VERSION}
 tar xvf ${INSTALL_NAME}-${VERSION}.tar.bz2 2>&1 > /dev/null
 cd ${NAME}-${VERSION}
 
-CC=gcc GXX=g++ FC=gfortran ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
+CC=gcc CXX=g++ FC=gfortran ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
 make -j 24 install  || exit
 
 
@@ -93,6 +77,9 @@ cd ${NAME}-${VERSION}
 
 CC=nvc CFLAGS="-fPIC" CXX=nvc++ CXXFLAGS="-fPIC" FC=nvfortran FCFLAGS="-fPIC" ./configure --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/$VERSION-${COMPILER}  --with-pmix=internal  --with-hwloc=internal --disable-silent-rules --enable-builtin-atomics --enable-mpi-cxx --enable-mpi1-compatibility --with-hwloc=internal  --without-verbs
 make -j 24 install  || exit
+
+
+# Clean up
 
 cd ~/build
 rm -fr ${NAME}-${VERSION}
