@@ -1,0 +1,51 @@
+NAME="COSMA"
+MAJOR_VERSION="2"
+MINOR_VERSION="5.1"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
+
+COSTA_NAME="COSTA"
+COSTA_VERSION="2.0"
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+tar xvf ${COSTA_NAME}-${COSTA_VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+cd libs
+rm -fr ${COSTA_NAME}
+ln -s ../../${COSTA_NAME}-${COSTA_VERSION} ${COSTA_NAME}
+cd ..
+
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+module load openblas/0.3.20-intel
+module load cmake/latest
+module load scalapack/2/2.2.0-intel-openmpi
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
+                           -DCMAKE_C_FLAGS="-march=core-avx2 -mfma -fPIC ${CFLAGS}" \
+                           -DCMAKE_CXX_COMPILER=icpc \
+                           -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma -fPIC ${CXXFLAGS}" \
+                           -DBUILD_SHARED_LIBS=ON \
+                           -DCOSMA_BLAS=CUSTOM \
+                           -DCOSMA_SCALAPACK=CUSTOM \
+                           -DCOSTA_SCALAPACK=CUSTOM \
+                           -DCOSMA_WITH_TESTS=NO \
+                           -DCOSMA_WITH_APPS=NO \
+                           -DSCALAPACK_LIBRARIES=/opt/software/scalapack/2/2.1.0-intel-openmpi/lib/libscalapack.so \
+                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
