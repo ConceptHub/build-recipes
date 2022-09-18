@@ -1,0 +1,42 @@
+NAME="SpFFT"
+MAJOR_VERSION="1"
+MINOR_VERSION="0.6"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# Intel oneAPI / OpenMPI
+
+COMPILER="intel"
+MPI="openmpi"
+FFTW3_VERSION="3.3.10"
+
+module purge
+module load intel
+module load compiler/latest
+module load fftw/3/${FFTW3_VERSION}-${COMPILER}-${MPI}
+module load gcc/12/latest
+module load cmake/latest
+module load ${MPI}/4/${COMPILER}/latest
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
+                           -DCMAKE_CXX_COMPILER=icpc \
+                           -DCMAKE_CXX_FLAGS="-march=core-avx2 -mfma -fPIC" \
+                           -DBUILD_SHARED_LIBS=ON \
+                           -DCMAKE_BUILD_TYPE=Release \
+                           -DSPFFT_BUILD_TESTS=OFF \
+                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI} \
+                           -DFFTW_INCLUDE_DIRS=/opt/software/fftw/3/${FFTW3_VERSION}-${COMPILER}-${MPI}/include \
+                           -DFFTW_LIBRARIES=/opt/software/fftw/3/${FFTW3_VERSION}-${COMPILER}-${MPI}/lib/libfftw3.so
+cmake --build build-${COMPILER} -j 12
+cmake --install build-${COMPILER}
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
