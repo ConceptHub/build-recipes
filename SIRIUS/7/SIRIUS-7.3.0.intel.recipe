@@ -1,0 +1,53 @@
+NAME="SIRIUS"
+MAJOR_VERSION="7"
+MINOR_VERSION="3.0"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/latest
+module load gsl/2/2.7-intel
+module load libxc/5/5.2.2-intel
+module load zlib/1/1.2.11-intel
+module load hdf5/1/1.13/1.13.2-intel-openmpi
+module load SpFFT/1/1.0.6-intel-openmpi
+module load spla/1/1.5.3-intel-openmpi
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc \
+                           -DCMAKE_C_FLAGS="-march=core-avx2 -fma -fPIC $CFLAGS" \
+                           -DCMAKE_CXX_COMPILER=icpc \
+                           -DCMAKE_CXX_FLAGS="-march=core-avx2 -fma -fPIC $CXXFLAGS" \
+                           -DCMAKE_Fortran_COMPILER=ifort \
+                           -DCMAKE_Fortran_FLAGS="-march=core-avx2 -fma -fPIC $FCFLAGS" \
+                           -DBUILD_SHARED_LIBS=ON \
+                           -DCMAKE_BUILD_TYPE=Release \
+                           -DBUILD_TESTING=OFF \
+                           -DGSL_CBLAS_LIBRARY=/opt/software/gsl/2/2.7-intel/lib/libgslcblas.so \
+                           -DGSL_INCLUDE_DIR=/opt/software/gsl/2/2.7-intel/include \
+                           -DGSL_LIBRARY=/opt/software/gsl/2/2.7-intel/lib/libgsl.so \
+                           -DLIBXC_INCLUDE_DIR=/opt/software/libxc/5/5.2.2-intel/include \
+                           -DLIBXC_LIBRARIES=/opt/software/libxc/5/5.2.2-intel/lib64/libxc.so \
+                           -DLIBSPG_LIBRARIES=/opt/software/spglib/1/1.11.2.1-intel/lib/libsymspg.so \
+                           -DLIBSPG_INCLUDE_DIR=/opt/software/spglib/1/1.11.2.1-intel/include \
+                           -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-intel-openmpi
+
+cmake --build build-${COMPILER} -j 24
+cmake --install build-${COMPILER}
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
