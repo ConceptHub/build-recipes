@@ -1,0 +1,101 @@
+NAME="OpenBLAS"
+INSTALL_NAME="openblas"
+MAJOR_VERSION="0"
+MINOR_VERSION="3.21"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+
+# INtel oneAPI
+COMPILER="intel"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load intel
+module load compiler/latest
+
+CC=icc
+FC=ifort
+
+CC=${CC} FC=${FC} make TARGET=ZEN
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+CC=nvc
+FC=nvfortran
+
+CC=${CC} FC=${FC} make TARGET=ZEN
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load amd/aocc/latest
+
+CC=clang
+FC=flang
+
+CC=${CC} FC=${FC} make TARGET=ZEN
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
+
+# GNU GCC
+COMPILER="gcc"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load gcc/12/latest
+
+CC=gcc
+FC=gfortran
+
+CC=${CC} FC=${FC} make TARGET=ZEN
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
