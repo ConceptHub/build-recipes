@@ -1,0 +1,33 @@
+VERSION="1.17"
+
+export LANG=C
+export LC_ALL=C
+
+cd ~/build
+rm -fr libxsmm-$VERSION
+tar xvf libxsmm-$VERSION.tar.gz
+cd libxsmm-$VERSION
+
+module purge
+module load intel
+module load compiler/latest
+module load mkl/latest
+module load gcc/11/latest
+
+export CC=icc
+export CXX=icpc
+export FC=ifort
+
+make -j 48 COMPATIBLE=1 AVX=2 STATIC=0 PREFIX=/opt/software/libxsmm/1/1.17-intel generator
+make -j 48 COMPATIBLE=1 AVX=2 STATIC=0 PREFIX=/opt/software/libxsmm/1/1.17-intel install
+mkdir /opt/software/libxsmm/1/1.17-intel/lib/pkgconfig
+cd /opt/software/libxsmm/1/1.17-intel/lib/pkgconfig
+ln -s ../libxsmm.pc .
+ln -s ../libxsmmext.pc .
+ln -s ../libxsmmf.pc .
+ln -s ../libxsmmnoblas.pc .
+cd /opt/software/libxsmm/1/1.17-intel/bin
+ln -s libxsmm_gemm_generator libxsmm_generator
+cd ~/build
+tar xvf libxsmm-$VERSION
+
