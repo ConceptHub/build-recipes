@@ -26,7 +26,7 @@ cd build-${COMPILER}
 INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
 
 ../configure --prefix=${INSTALL_PREFIX} \
-          --enable-openmp=${enable_openmp} \
+          --enable-openmp=yes \
           --enable-shared=yes \
           --enable-static=yes \
           --enable-avx=yes --enable-avx2=yes --enable-avx512=no \
