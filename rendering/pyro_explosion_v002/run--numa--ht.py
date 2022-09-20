@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
             proc_str = '+0-' + str(i)
 
-        command = 'numactl --physcpubind=' + proc_str + ' /opt/software/hfs/bin/hbatch pyro_explosion_v002.hiplc -j -1 -c "render /obj/explosion/cache/render; quit"'
+        command = 'numactl --physcpubind=' + proc_str + ' hbatch pyro_explosion_v002.hiplc -j -1 -c "render /obj/explosion/cache/render; quit"'
 
         s = time.time()
 
