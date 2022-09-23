@@ -1,0 +1,40 @@
+NAME="gcc"
+INSTALL_NAME="gcc"
+VERSION_MAJOR=12
+VERSION_MINOR=2.0
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+BUILDDIR=~/build
+
+cd ${BUILDDIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz 2>&1 > /dev/null
+cd ${NAME}-${VERSION}
+
+module purge
+module load zstd/1/latest-gcc
+module load gcc/11/latest
+
+# We already have MPFR, MPC, GMP, and ISL installed for GCC 12.1.0. Let's use them here:
+
+MPFR_ROOT=/opt/software/gnu/gcc-12/mpfr-4.1.0
+MPC_ROOT=/opt/software/gnu/gcc-12/mpc-1.2.1
+GMP_ROOT=/opt/software/gnu/gcc-12/gmp-6.2.1
+ISL_ROOT=/opt/software/gnu/gcc-12/isl-0.24
+ZSTD_ROOT=/opt/software/zstd/1/1.5.2-gcc
+
+INSTALL_PREFIX=/opt/software/gnu/${NAME}-${VERSION_MAJOR}/${NAME}-${VERSION}
+
+CC=gcc CXX=g++ FC=gfortran CFLAGS="-march=znver2 -mtune=znver2" CXXFLAGS="-march=znver2 -mtune=znver2" FCFLAGS="-march=znver2 -mtune=znver2" ./configure --with-mpfr=${MPFR_ROOT} --with-mpc=${MPC_ROOT} --with-gmp=${GMP_ROOT} --with-isl=${ISL_ROOT} --disable-multilib --with-zstd=${ZSTD_ROOT} --prefix=${INSTALL_PREFIX}
+
+make -j 96 || exit
+
+make install || exit
+
+cd ~/build
+rm -fr ${NAME}-${VERSION}
+
