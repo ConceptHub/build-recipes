@@ -1,0 +1,16 @@
+--- scripts/stage7/install_spglib.sh    2022-07-08 23:23:24.000000000 +0300
++++ ../../../install_spglib.sh  2022-09-24 19:59:30.000000000 +0300
+@@ -30,9 +30,9 @@
+       if [ -f spglib-${spglib_ver}.tar.gz ]; then
+         echo "spglib-${spglib_ver}.tar.gz is found"
+       else
+-        download_pkg ${DOWNLOADER_FLAGS} ${spglib_sha256} \
+-          https://github.com/atztogo/spglib/archive/v${spglib_ver}.tar.gz \
+-          -o spglib-${spglib_ver}.tar.gz
++        download_pkg_no_checksum ${DOWNLOADER_FLAGS} \
++               -o spglib-${spglib_ver}.tar.gz \
++         https://www.cp2k.org/static/downloads/spglib-${spglib_ver}.tar.gz
+       fi
+
+       echo "Installing from scratch into ${pkg_install_dir}"
+

@@ -1,0 +1,61 @@
+NAME="cp2k"
+MAJOR_VERSION="2022"
+MINOR_VERSION="1"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_DIR=~/build/
+
+cd ${BUILD_DIR}
+
+rm -fr ${BUILD_DIR}/${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+
+export LANG=C
+export LC_ALL=C
+
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load intel
+module load compiler/latest
+module load cmake/latest
+module load libint/2/2.6.0-cp2k-lmax-5-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+module load gcc/10/latest
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}/tools/toolchain/
+
+patch -p0 < ../../../${NAME}-${VERSION}-install_spglib.sh.patch
+
+./install_cp2k_toolchain.sh --with-openmpi=system --with-cmake=system --with-intel=system --with-libint=system || exit
+
+cp ${BUILD_DIR}/${NAME}-${VERSION}/tools/toolchain/install/arch/* ${BUILD_DIR}/${NAME}-${VERSION}/arch/
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+patch -p0 < ../${NAME}-${VERSION}.local.ssmp.patch
+patch -p0 < ../${NAME}-${VERSION}.local.sdbg.patch
+patch -p0 < ../${NAME}-${VERSION}.local.psmp.patch
+patch -p0 < ../${NAME}-${VERSION}.local.pdbg.patch
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}/exts
+
+rm -fr dbcsr
+
+git clone --recursive https://github.com/${NAME}/dbcsr.git
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+make -j 128 ARCH=local VERSION="ssmp sdbg psmp pdbg" || exit
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir -p ${INSTALL_PREFIX}/bin
+
+rsync -vrtl ${BUILD_DIR}/${NAME}-${VERSION}/exe/local/* ${INSTALL_PREFIX}/bin/
+rsync -vrtl ${BUILD_DIR}/${NAME}-${VERSION}/data ${INSTALL_PREFIX}/
+
+cd ${BUILD_DIR}
+rm -fr ${BUILD_DIR}/${NAME}-${VERSION}
+
