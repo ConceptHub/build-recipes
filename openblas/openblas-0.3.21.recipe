@@ -37,7 +37,7 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-static-intel
 cmake --build build-${COMPILER} -j 24
 cmake --install build-${COMPILER}
 
-exit
+
 # NVIDIA HPC SDK
 COMPILER="nvidia"
 
@@ -60,7 +60,7 @@ CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${V
 cd ${BUILD_ROOT}
 rm -fr ${NAME}-${VERSION}
 
-exit
+
 # AMD AOCC
 COMPILER="aocc"
 
