@@ -1,59 +1,101 @@
-VERSION="0.3.20"
+NAME="OpenBLAS"
+INSTALL_NAME="openblas"
+MAJOR_VERSION="0"
+MINOR_VERSION="3.20"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+BUILD_ROOT=~/build
 
 export LANG=C
 export LC_ALL=C
 
-# Intel oneAPI
 
-cd ~/build
-rm -fr OpenBLAS-$VERSION
-tar xvf OpenBLAS-$VERSION.tar.gz
-cd OpenBLAS-$VERSION
+# INtel oneAPI
+COMPILER="intel"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
 
 module purge
 module load intel
-module load gcc/12/latest
 module load compiler/latest
-module load cmake/latest
 
-CC=icc FC=ifort make TARGET=ZEN
-rm -fr /opt/software/openblas/$VERSION-intel
-CC=icc FC=ifort make PREFIX=/opt/software/openblas/$VERSION-intel install
+CC=icc
+FC=ifort
 
-rm -fr ~/build/OpenBLAS-$VERSION
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} CFLAGS="-static-intel" FFLAGS="-static-intel" FCFLAGS="-static-intel"  make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
 
-# GNU GCC
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
 
-cd ~/build
-rm -fr OpenBLAS-$VERSION
-tar xvf OpenBLAS-$VERSION.tar.gz
-cd OpenBLAS-$VERSION
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
 
 module purge
-module load gcc/12/latest
-module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
 
-CC=gcc FC=gfortran make TARGET=ZEN
-rm -fr /opt/software/openblas/$VERSION-gcc
-CC=gcc FC=gfortran make PREFIX=/opt/software/openblas/$VERSION-gcc install
+CC=nvc
+FC=nvfortran
 
-rm -fr ~/build/OpenBLAS-$VERSION
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
 
 
 # AMD AOCC
+COMPILER="aocc"
 
-cd ~/build
-rm -fr OpenBLAS-$VERSION
-tar xvf OpenBLAS-$VERSION.tar.gz
-cd OpenBLAS-$VERSION
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
 
 module purge
 module load amd/aocc/latest
-module load cmake/latest
 
-CC=clang FC=flang make TARGET=ZEN
-rm -fr /opt/software/openblas/$VERSION-aocc
-CC=clang FC=flang make PREFIX=/opt/software/openblas/$VERSION-aocc install
+CC=clang
+FC=flang
 
-rm -fr ~/build/OpenBLAS-$VERSION
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
+
+# GNU GCC
+COMPILER="gcc"
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+module purge
+module load gcc/11/latest
+
+CC=gcc
+FC=gfortran
+
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1
+rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
+CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
 
