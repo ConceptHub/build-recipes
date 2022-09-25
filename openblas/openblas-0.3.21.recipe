@@ -1,7 +1,7 @@
 NAME="OpenBLAS"
 INSTALL_NAME="openblas"
 MAJOR_VERSION="0"
-MINOR_VERSION="3.20"
+MINOR_VERSION="3.21"
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 BUILD_ROOT=~/build
@@ -25,14 +25,19 @@ module load compiler/latest
 CC=icc
 FC=ifort
 
-CC=${CC} FC=${FC} make TARGET=ZEN
-rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
-CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
-cd ${BUILD_ROOT}
-rm -fr ${NAME}-${VERSION}
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-static-intel" -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_Fortran_FLAGS="-static-intel" -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=1 -DBUILD_STATIC_LIBS=ON -DCMAKE_COLOR_MAKEFILE=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 24
+cmake --install build-${COMPILER}
 
+rm -fr build-${COMPILER}
 
+cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-static-intel" -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_Fortran_FLAGS="-static-intel" -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=1 -DBUILD_SHARED_LIBS=ON -DCMAKE_COLOR_MAKEFILE=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 24
+cmake --install build-${COMPILER}
+
+exit
 # NVIDIA HPC SDK
 COMPILER="nvidia"
 
@@ -48,14 +53,14 @@ module load nvhpc-nompi/latest
 CC=nvc
 FC=nvfortran
 
-CC=${CC} FC=${FC} make TARGET=ZEN
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1 BINARY=64
 rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
 CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
 
 cd ${BUILD_ROOT}
 rm -fr ${NAME}-${VERSION}
 
-
+exit
 # AMD AOCC
 COMPILER="aocc"
 
@@ -70,7 +75,7 @@ module load amd/aocc/latest
 CC=clang
 FC=flang
 
-CC=${CC} FC=${FC} make TARGET=ZEN
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1 BINARY=64
 rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
 CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
 
@@ -92,7 +97,7 @@ module load gcc/11/latest
 CC=gcc
 FC=gfortran
 
-CC=${CC} FC=${FC} make TARGET=ZEN
+CC=${CC} FC=${FC} make TARGET=ZEN USE_OPENMP=1 BINARY=64
 rm -fr /opt/software/${INSTALL_NAME}/${VERSION}-${COMPILER}
 CC=${CC} FC=${FC} make PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} install
 
