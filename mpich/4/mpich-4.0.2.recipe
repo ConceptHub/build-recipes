@@ -30,7 +30,7 @@ unset F90FLAGS
 
 INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
 
-CC=icc CXX=icpc FC=ifort F77=ifort FFLAGS="" FCFLAGS="" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+CC=icc CXX=icpc FC=ifort F77=ifort FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
 
 make -j 48 install || exit
 
@@ -49,7 +49,7 @@ unset F90FLAGS
 
 INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
 
-CC=nvc CXX=nvc++ FC=nvfortran F77=nvfortran FFLAGS="-m64" FCFLAGS="-m64" CFLAGS="-m64" CXXFLAGS="-m64" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+CC=nvc CXX=nvc++ FC=nvfortran F77=nvfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
 
 make -j 48 install || exit
 
@@ -67,7 +67,7 @@ unset F90FLAGS
 
 INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
 
-CC=clang CXX=clang++ FC=flang FFLAGS="-m64" FCFLAGS="-m64" CFLAGS="-m64" CXXFLAGS="-m64" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+CC=clang CXX=clang++ FC=flang FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
 
 make -j 48 install || exit
 
@@ -85,7 +85,7 @@ unset F90FLAGS
 
 INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
 
-CC=gcc CXX=g++ FC=gfortran F77=gfortran FFLAGS="" FCFLAGS="" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+CC=gcc CXX=g++ FC=gfortran F77=gfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
 
 make -j 48 install || exit
 
@@ -93,3 +93,4 @@ make -j 48 install || exit
 # Clean up
 cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
+
