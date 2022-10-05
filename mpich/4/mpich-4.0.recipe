@@ -1,0 +1,96 @@
+NAME="mpich"
+INSTALL_NAME="mpich"
+MAJOR_VERSION="4"
+MINOR_VERSION="0"
+
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/11/latest
+
+unset F90
+unset F90FLAGS
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+
+CC=icc CXX=icpc FC=ifort F77=ifort FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+
+make -j 48 install || exit
+
+make distclean
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+unset F90
+unset F90FLAGS
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+
+CC=nvc CXX=nvc++ FC=nvfortran F77=nvfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+
+make -j 48 install || exit
+
+make distclean
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/3/3.2.0
+
+unset F90
+unset F90FLAGS
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+
+CC=clang CXX=clang++ FC=flang FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+
+make -j 48 install || exit
+
+make distclean
+
+
+# GNU GCC 12
+COMPILER="gcc"
+
+module purge
+module load amd/gcc/12/latest
+
+unset F90
+unset F90FLAGS
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+
+CC=gcc CXX=g++ FC=gfortran F77=gfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr
+
+make -j 48 install || exit
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
