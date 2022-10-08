@@ -1,0 +1,98 @@
+NAME="OpenMolcas-v"
+INSTALL_NAME="openmolcas"
+MAJOR_VERSION="22"
+MINOR_VERSION="06"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${VERSION}
+tar xvf ${NAME}${VERSION}.tar.gz || exit
+cd ${NAME}${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+MPI="mpich"
+
+module load intel.universe
+module load ga/5/latest-${COMPILER}-${MPI}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load cmake/latest
+
+FFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+CFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+CXXFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+
+CC=icc
+CXX=icpc
+FC=ifort
+F77=ifort
+
+cmake -B build-${COMPILER} \
+         -DGAROOT=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI} \
+         -DLINALG=OpenBLAS \
+         -DOPENBLASROOT=/opt/software/openblas/0/0.3.21-${COMPILER} \
+         -DMPI=ON \
+         -DCMAKE_C_COMPILER=mpicc \
+         -DCMAKE_C_FLAGS="-ip -static-intel -march=core-avx2 -fma $CFLAGS" \
+         -DCMAKE_CXX_COMPILER=mpic++ \
+         -DCMAKE_CXX_FLAGS="-ip -static-intel -march=core-avx2 -fma $CXXFLAGS" \
+         -DCMAKE_Fortran_COMPILER=mpifort \
+         -DCMAKE_Fortran_FLAGS="-ip -static-intel -march=core-avx2 -fma $FFLAGS" \
+         -DGA=ON \
+         -DGA_INCLUDE_PATH=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include \
+         -DLIBGA=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/lib64/libga.so \
+         -DLIBARMCI=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/lib64/libarmci.so \
+         -DMPI_Fortran_COMPILER_INCLUDE_DIRS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI} \
+         -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+MPI="openmpi"
+
+module load intel.universe
+module load ga/5/latest-${COMPILER}-${MPI}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load cmake/latest
+
+FFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+CFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+CXXFLAGS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include"
+
+CC=icc
+CXX=icpc
+FC=ifort
+F77=ifort
+
+cmake -B build-${COMPILER} \
+         -DGAROOT=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI} \
+         -DLINALG=OpenBLAS \
+         -DOPENBLASROOT=/opt/software/openblas/0/0.3.21-${COMPILER} \
+         -DMPI=ON \
+         -DCMAKE_C_COMPILER=mpicc \
+         -DCMAKE_C_FLAGS="-ip -static-intel -march=core-avx2 -fma $CFLAGS" \
+         -DCMAKE_CXX_COMPILER=mpic++ \
+         -DCMAKE_CXX_FLAGS="-ip -static-intel -march=core-avx2 -fma $CXXFLAGS" \
+         -DCMAKE_Fortran_COMPILER=mpifort \
+         -DCMAKE_Fortran_FLAGS="-ip -static-intel -march=core-avx2 -fma $FFLAGS" \
+         -DGA=ON \
+         -DGA_INCLUDE_PATH=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include \
+         -DLIBGA=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/lib64/libga.so \
+         -DLIBARMCI=/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/lib64/libarmci.so \
+         -DMPI_Fortran_COMPILER_INCLUDE_DIRS="-I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include/ga -I/opt/software/ga/5/5.8.1/${COMPILER}/${MPI}/include" \
+         -DCMAKE_INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI} \
+         -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${VERSION}
+
