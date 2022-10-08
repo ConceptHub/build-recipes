@@ -39,13 +39,15 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib64/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 MPI="mpich"
 
@@ -67,13 +69,15 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib64/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 
 # NVIDIA HPC SDK
@@ -97,13 +101,15 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 MPI="mpich"
 
@@ -123,13 +129,15 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 
 # AMD AOCC
@@ -153,14 +161,16 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF \
           -DGCCROOT=/opt/software/gnu/gcc-12/gcc-12.1.0
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 MPI="mpich"
 
@@ -180,14 +190,16 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF \
           -DGCCROOT=/opt/software/gnu/gcc-12/gcc-12.1.0
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 
 # GCC
@@ -211,14 +223,16 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF \
           -DGCCROOT=/opt/software/gnu/gcc-12/gcc-12.1.0
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 MPI="mpich"
 
@@ -238,14 +252,16 @@ cmake -B build-${COMPILER}-${MPI} \
           -DENABLE_BLAS=ON \
           -DLINALG_VENDOR=OpenBLAS \
           -DLINALG_PREFIX=/opt/software/openblas/0/0.3.21-${COMPILER} \
+          -DOpenBLAS_INCLUDE_DIR=/opt/software/openblas/0/0.3.21-${COMPILER}/include \
+          -DBLAS_LIBRARIES=/opt/software/openblas/0/0.3.21-${COMPILER}/lib/libopenblas.so \
           -DENABLE_TESTS=OFF \
           -DENABLE_CXX=ON \
           -DENABLE_FORTRAN=ON \
           -DENABLE_PROFILING=OFF \
           -DGCCROOT=/opt/software/gnu/gcc-12/gcc-12.1.0
 
-cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI}
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
 
 
 cd ${BUILD_ROOT}
