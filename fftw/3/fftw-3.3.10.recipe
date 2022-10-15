@@ -69,7 +69,45 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 module purge
 module load intel
 module load compiler/latest
-module load openmpi/4/intel/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
+
+CC=icc
+CXX=icpc
+F77=ifort
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is not supported
+
+
+# Intel oneAPI / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS=""
+FFLAGS=""
+
+COMPILER='intel'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load intel
+module load compiler/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=icc
 CXX=icpc
@@ -106,7 +144,44 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 
 module purge
 module load nvidia
-module load openmpi/4/nvidia/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
+
+CC=nvc
+CXX=nvc++
+F77=nvfortran
+MPICC=mpicc
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# AVX2 requires single or double precision.
+./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+make -j 48 install || exit
+make distclean
+
+# Quad precision is not supported
+
+
+# NVIDIA HPC SDK / MPICH
+
+SIMD="--enable-avx2"
+OPTS="--enable-openmp --enable-shared"
+CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
+FFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
+
+COMPILER='nvidia'
+MPI_VENDOR='mpich'
+
+INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI_VENDOR}
+
+module purge
+module load nvidia
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=nvc
 CXX=nvc++
@@ -143,7 +218,7 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 
 module purge
 module load gcc/11/latest
-module load mpich/3/gcc/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=gcc
 CXX=g++
@@ -168,7 +243,7 @@ make -j 48 install || exit
 make distclean
 
 
-# GCC / MPICH
+# GCC / OpenMPI
 
 SIMD="--enable-avx2"
 OPTS="--enable-openmp --enable-shared"
@@ -182,7 +257,7 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 
 module purge
 module load gcc/11/latest
-module load openmpi/4/gcc/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=gcc
 CXX=g++
@@ -221,7 +296,7 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 
 module purge
 module load amd/aocc/3/latest
-module load mpich/3/aocc/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=clang
 CXX=clang++
@@ -258,7 +333,7 @@ INSTALL_PREFIX=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPI
 
 module purge
 module load amd/aocc/3/latest
-module load openmpi/4/aocc/latest
+module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
 CC=clang
 CXX=clang++
@@ -280,3 +355,4 @@ make -j 48 install || exit
 
 cd ${BUILDDIR}
 rm -fr ${INSTALL_NAME}-${VERSION}
+
