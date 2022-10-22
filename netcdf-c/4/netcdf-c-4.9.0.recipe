@@ -1,0 +1,232 @@
+NAME="netcdf-c"
+MAJOR_VERSION="4"
+MINOR_VERSION="9.0"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_DIR=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI / OpenMPI
+
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/netcdf-c/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# Intel oneAPI / MPICH
+
+COMPILER="intel"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/netcdf-c/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK / OpenMPI
+
+COMPILER="nvidia"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK / MPICH
+
+COMPILER="nvidia"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# AOCC / OpenMPI
+
+COMPILER="aocc"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# AOCC / MPICH
+
+COMPILER="aocc"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# GCC / OpenMPI
+
+COMPILER="gcc"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# GCC / MPICH
+
+COMPILER="gcc"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
