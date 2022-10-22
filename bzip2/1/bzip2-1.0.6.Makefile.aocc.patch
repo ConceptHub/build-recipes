@@ -1,0 +1,11 @@
+--- Makefile	2022-09-17 20:35:25.000000000 +0300
++++ Makefile.aocc	2022-09-17 20:34:23.000000000 +0300
+@@ -21,7 +21,7 @@
+ LDFLAGS=
+ 
+ BIGFILES=-D_FILE_OFFSET_BITS=64
+-CFLAGS=-Wall -Winline -O2 -g $(BIGFILES)
++CFLAGS=-Wall -Winline -O2 -g -mavx2 -mfma -fPIC -mtune=native $(BIGFILES)
+ 
+ # Where you want it installed when you do 'make install'
+ PREFIX=/usr/local
