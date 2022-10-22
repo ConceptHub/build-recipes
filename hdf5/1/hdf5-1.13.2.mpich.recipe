@@ -48,6 +48,9 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
                            -DLARGE_PARALLEL_IO=YES \
                            -DHDF5_ENABLE_SZIP_SUPPORT=ON \
                            -DHDF5_ENABLE_SZIP_ENCODING=ON \
+                           -DUSE_LIBAEC=ON \
+                           -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+                           -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
                            -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
                            -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
                            -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
@@ -58,7 +61,6 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
 
 cmake --build build-${COMPILER} -j 48
 cmake --install build-${COMPILER}
-
 
 # NVIDIA HPC SDK / OpenMPI
 COMPILER="nvidia"
@@ -80,6 +82,9 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
                            -DLARGE_PARALLEL_IO=YES \
                            -DHDF5_ENABLE_SZIP_SUPPORT=ON \
                            -DHDF5_ENABLE_SZIP_ENCODING=ON \
+                           -DUSE_LIBAEC=ON \
+                           -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+                           -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
                            -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
                            -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
                            -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
@@ -87,10 +92,8 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
                            -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
                            -DCMAKE_BUILD_TYPE=Release \
                            -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
-
 cmake --build build-${COMPILER} -j 48
 cmake --install build-${COMPILER}
-
 
 # AMD AOCC / OpenMPI
 COMPILER="aocc"
@@ -111,6 +114,9 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
                            -DLARGE_PARALLEL_IO=YES \
                            -DHDF5_ENABLE_SZIP_SUPPORT=ON \
                            -DHDF5_ENABLE_SZIP_ENCODING=ON \
+                           -DUSE_LIBAEC=ON \
+                           -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+                           -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
                            -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
                            -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
                            -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
@@ -142,6 +148,9 @@ cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx 
                            -DLARGE_PARALLEL_IO=YES \
                            -DHDF5_ENABLE_SZIP_SUPPORT=ON \
                            -DHDF5_ENABLE_SZIP_ENCODING=ON \
+                           -DUSE_LIBAEC=ON \
+                           -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+                           -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
                            -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
                            -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
                            -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
