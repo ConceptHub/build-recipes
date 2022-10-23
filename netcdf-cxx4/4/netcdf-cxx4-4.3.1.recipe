@@ -1,0 +1,242 @@
+NAME="netcdf-cxx4"
+MAJOR_VERSION="4"
+MINOR_VERSION="3.1"
+
+NETCDF_C_NAME="netcdf-c"
+NETCDF_C_MAJOR_VERSION="4"
+NETCDF_C_MINOR_VERSION="9.0"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+NETCDF_C_VERSION=${NETCDF_C_MAJOR_VERSION}.${NETCDF_C_MINOR_VERSION}
+
+BUILD_DIR=~/build
+INSTALL_ROOT="/opt/software/${NAME}"
+NETCDF_C_INSTALL_ROOT="/opt/software/${NETCDF_C_NAME}"
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI / OpenMPI
+
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS} -diag-disable=10441" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+# Intel oneAPI / MPICH
+
+COMPILER="intel"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS} -diag-disable=10441" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK / OpenMPI
+
+COMPILER="nvidia"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}" CXXFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK / MPICH
+
+COMPILER="nvidia"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}" CXXFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# AMD AOCC / OpenMPI
+
+COMPILER="aocc"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# AMD AOCC / MPICH
+
+COMPILER="aocc"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# GNU GCC / OpenMPI
+
+COMPILER="gcc"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# GNU GCC / MPICH
+
+COMPILER="gcc"
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure CC=mpicc CXX=mpic++ CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" CXXFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CXXFLAGS}" --prefix=${INSTALL_PREFIX}
+
+make -j 48 install || exit
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
