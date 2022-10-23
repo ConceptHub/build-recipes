@@ -1,0 +1,78 @@
+NAME="libxc"
+MAJOR_VERSION="5"
+MINOR_VERSION="2.2"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_DIR=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# Intel oneAPI
+
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=icc -DCMAKE_C_FLAGS="-mavx2 -mfma -diag-disable=10441 $CFLAGS" -DENABLE_FORTRAN=ON -DCMAKE_Fortran_COMPILER=ifort -DCMAKE_C_FLAGS="-mavx2 -mfma -diag-disable=10441 $FCFLAGS" -DCMAKE_INSTALL_PREFIX=/opt/software/libxc/5/5.2.2-${COMPILER}
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+
+# NVIDIA HPC SDK
+
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load cmake/latest
+
+
+cmake -B build-${COMPILER} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=nvc -DCMAKE_C_FLAGS="-mp -tp=zen2 -Mcache_align -mfma -fPIC $CFLAGS" -DENABLE_FORTRAN=ON -DCMAKE_Fortran_COMPILER=nvfortran -DCMAKE_C_FLAGS="-mp -tp=zen2 -Mcache_align -mfma -fPIC $FCFLAGS" -DCMAKE_INSTALL_PREFIX=/opt/software/libxc/5/5.2.2-${COMPILER}
+cmake --build build-${COMPILER} -j 48
+ctest -test-dir build-${COMPILER}
+cmake --install build-${COMPILER}
+
+
+# AMD AOCC
+
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/3/latest
+module load cmake/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS="-mavx2 -mfma $CFLAGS" -DENABLE_FORTRAN=ON -DCMAKE_Fortran_COMPILER=flang -DCMAKE_C_FLAGS="-mavx2 -mfma $FCFLAGS" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+
+# GNU GCC
+
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-mavx2 -mfma $CFLAGS" -DENABLE_FORTRAN=ON -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_C_FLAGS="-mavx2 -mfma $FCFLAGS" -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
