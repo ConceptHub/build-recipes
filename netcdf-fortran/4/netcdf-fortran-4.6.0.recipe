@@ -1,17 +1,10 @@
 NAME="netcdf-fortran"
 MAJOR_VERSION="4"
 MINOR_VERSION="6.0"
-
-NETCDF_C_NAME="netcdf-c"
-NETCDF_C_MAJOR_VERSION="4"
-NETCDF_C_MINOR_VERSION="9.0"
-
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
-NETCDF_C_VERSION=${NETCDF_C_MAJOR_VERSION}.${NETCDF_C_MINOR_VERSION}
 
 BUILD_DIR=~/build
-INSTALL_ROOT="/opt/software/${NAME}"
-NETCDF_C_INSTALL_ROOT="/opt/software/${NETCDF_C_NAME}"
+INSTALL_ROOT="/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
@@ -22,9 +15,38 @@ tar xvf ${NAME}-${VERSION}.tar.gz || exit
 cd ${NAME}-${VERSION}
 
 
-# Intel oneAPI / OpenMPI
-
+# Intel oneAPI
 COMPILER="intel"
+COMPILER_FLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC -diag-disable=10441"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load intel
+module load compiler/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=icc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=icpc \
+      -DCMAKE_Fortran_COMPILER=ifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -36,145 +58,22 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
 cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441" \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
       -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS} -diag-disable=10441" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
-
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
-
-
-# Intel oneAPI / MPICH
-
-COMPILER="intel"
-MPI="mpich"
-
-module purge
-module load cmake/latest
-module load zlib/1/latest-${COMPILER}
-module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
-module load zstd/1/latest-gcc
-module load libaec/1/latest-${COMPILER}
-module load bzip2/1/latest-${COMPILER}
-module load ${MPI}/4/${COMPILER}/latest
-
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
-cmake -B build-${COMPILER}-${MPI} \
-      -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441" \
-      -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS} -diag-disable=10441" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release 
-
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
-
-
-# NVIDIA HPC SDK / OpenMPI
-
-COMPILER="nvidia"
-MPI="openmpi"
-
-module purge
-module load cmake/latest
-module load zlib/1/latest-${COMPILER}
-module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
-module load zstd/1/latest-gcc
-module load libaec/1/latest-${COMPILER}
-module load bzip2/1/latest-${COMPILER}
-module load ${MPI}/4/${COMPILER}/latest
-
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
-cmake -B build-${COMPILER}-${MPI} \
-      -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}" \
-      -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
-
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
-
-
-# NVIDIA HPC SDK / MPICH
-
-COMPILER="nvidia"
-MPI="mpich"
-
-module purge
-module load cmake/latest
-module load zlib/1/latest-${COMPILER}
-module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
-module load zstd/1/latest-gcc
-module load libaec/1/latest-${COMPILER}
-module load bzip2/1/latest-${COMPILER}
-module load ${MPI}/4/${COMPILER}/latest
-
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
-cmake -B build-${COMPILER}-${MPI} \
-      -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}" \
-      -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
-
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
-
-
-# AMD AOCC / OpenMPI
-
-COMPILER="aocc"
-MPI="openmpi"
-
-module purge
-module load cmake/latest
-module load zlib/1/latest-${COMPILER}
-module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
-module load zstd/1/latest-gcc
-module load libaec/1/latest-${COMPILER}
-module load bzip2/1/latest-${COMPILER}
-module load ${MPI}/4/${COMPILER}/latest
-
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
-cmake -B build-${COMPILER}-${MPI} \
-      -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
-      -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI} || exit
+cmake --install build-${COMPILER}-${MPI}
 
+# MPICH build
 
-# AMD AOCC / MPICH
-
-COMPILER="aocc"
 MPI="mpich"
 
 module purge
@@ -186,25 +85,53 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
 cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
       -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 cmake --build build-${COMPILER}-${MPI} -j 48
-cmake --install build-${COMPILER}-${MPI} || exit
+cmake --install build-${COMPILER}-${MPI}
 
 
-# GNU GCC / OpenMPI
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+COMPILER_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC"
 
-COMPILER="gcc"
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load nvidia
+module load nvhpc-nompi/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=nvc++ \
+      -DCMAKE_Fortran_COMPILER=nvfortran \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -216,25 +143,22 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
-
 cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
       -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
 
+# MPICH build
 
-# GNU GCC / MPICH
-
-COMPILER="gcc"
 MPI="mpich"
 
 module purge
@@ -246,22 +170,188 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=${INSTALL_ROOT}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
+
+# AOCC
+COMPILER="aocc"
+COMPILER_FLAGS="-march=znver2 -mtune=znver2 -fPIC"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load amd/aocc/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_Fortran_COMPILER=flang \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+# OpenMPI build
+
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
 
 cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=mpicc \
-      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
       -DCMAKE_Fortran_COMPILER=mpifort \
-      -DCMAKE_Fortran_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${FCFLAGS}" \
-      -DNETCDF_C_LIBRARY=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/lib/libnetcdf.so \
-      -DNETCDF_C_INCLUDE_DIR=${NETCDF_C_INSTALL_ROOT}/${NETCDF_C_MAJOR_VERSION}/${NETCDF_C_VERSION}-${COMPILER}-${MPI}/include \
-      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
-cmake --build build-${COMPILER}-${MPI} -j 48 || exit
-cmake --install build-${COMPILER}-${MPI} || exit
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
+
+# MPICH build
+
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
+
+# GCC
+COMPILER="gcc"
+COMPILER_FLAGS="-mavx2 -mfma -mtune=native -fPIC"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load gcc/12/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DCMAKE_Fortran_COMPILER=gfortran \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48
+cmake --install build-${COMPILER}
+
+# OpenMPI build
+
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
+
+# MPICH build
+
+MPI="mpich"
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load netcdf/c/4.9/latest-${COMPILER}-${MPI}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48
+cmake --install build-${COMPILER}-${MPI}
 
 
+# Clean up
 cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
 
