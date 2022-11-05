@@ -186,6 +186,9 @@ cd build-${COMPILER}
 
 ../configure CC=clang CXX=clang++ CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" --prefix=${INSTALL_ROOT}-${COMPILER}
 
+make -j 48 install || exit
+make distclean
+
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 # Open MPI build
