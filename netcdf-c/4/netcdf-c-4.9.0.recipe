@@ -4,6 +4,7 @@ MINOR_VERSION="9.0"
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 
 BUILD_DIR=~/build
+INSTALL_ROOT="/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
@@ -14,9 +15,50 @@ tar xvf ${NAME}-${VERSION}.tar.gz || exit
 cd ${NAME}-${VERSION}
 
 
-# Intel oneAPI / OpenMPI
-
+# Intel oneAPI
 COMPILER="intel"
+COMPILER_FLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC -diag-disable=10441"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load intel
+module load compiler/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+mkdir build-${COMPILER}
+cd build-${COMPILER}
+
+CC=icc \
+   CPP=icc \
+   CXX=icpc \
+   FC=ifort \
+   F90=ifort \
+   F77=ifort \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -28,22 +70,34 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/netcdf-c/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
 
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
+# MPICH build
 
-# Intel oneAPI / MPICH
-
-COMPILER="intel"
 MPI="mpich"
 
 module purge
@@ -55,12 +109,26 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/netcdf-c/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS} -diag-disable=10441"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
@@ -68,9 +136,50 @@ make distclean
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
-# NVIDIA HPC SDK / OpenMPI
-
+# NVIDIA HPC SDK
 COMPILER="nvidia"
+COMPILER_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load nvidia
+module load nvhpc-nompi/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+mkdir build-${COMPILER}
+cd build-${COMPILER}
+
+CC=nvc \
+   CPP=nvc \
+   CXX=nvc++ \
+   FC=nvfortran \
+   F90=nvfortran \
+   F77=nvfortran \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -82,22 +191,34 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
 
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
+# MPICH build
 
-# NVIDIA HPC SDK / MPICH
-
-COMPILER="nvidia"
 MPI="mpich"
 
 module purge
@@ -109,12 +230,26 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
@@ -122,9 +257,49 @@ make distclean
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
-# AOCC / OpenMPI
-
+# AOCC
 COMPILER="aocc"
+COMPILER_FLAGS="-mavx2 -mfma -mtune=native -fPIC"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load amd/aocc/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+mkdir build-${COMPILER}
+cd build-${COMPILER}
+
+CC=clang \
+   CPP=clang \
+   CXX=clang++ \
+   FC=flang \
+   F90=flang \
+   F77=flang \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
+make -j 48
+make install
+make distclean
+
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -136,22 +311,34 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
 
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
+# MPICH build
 
-# AOCC / MPICH
-
-COMPILER="aocc"
 MPI="mpich"
 
 module purge
@@ -163,12 +350,26 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
@@ -176,9 +377,47 @@ make distclean
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
-# GCC / OpenMPI
-
+# GCC
 COMPILER="gcc"
+COMPILER_FLAGS="-mavx2 -mfma -mtune=native -fPIC"
+
+# Serial build
+
+module purge
+module load cmake/latest
+module load zlib/1/latest-${COMPILER}
+module load hdf5/1/1.13/latest-${COMPILER}
+module load zstd/1/latest-gcc
+module load libaec/1/latest-${COMPILER}
+module load bzip2/1/latest-${COMPILER}
+module load gcc/12/latest
+
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}
+
+mkdir build-${COMPILER}
+cd build-${COMPILER}
+
+CC=gcc \
+   CPP=gcc \
+   CXX=g++ \
+   FC=gfortran \
+   F90=gfortran \
+   F77=gfortran \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
+make -j 48
+make install
+make distclean
+
+# OpenMPI build
+
 MPI="openmpi"
 
 module purge
@@ -190,22 +429,34 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
 
 cd ${BUILD_DIR}/${NAME}-${VERSION}
 
+# MPICH build
 
-# GCC / MPICH
-
-COMPILER="gcc"
 MPI="mpich"
 
 module purge
@@ -217,16 +468,34 @@ module load libaec/1/latest-${COMPILER}
 module load bzip2/1/latest-${COMPILER}
 module load ${MPI}/4/${COMPILER}/latest
 
-INSTALL_PREFIX=/etc/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}
+INSTALL_PREFIX=${INSTALL_ROOT}-${COMPILER}-${MPI}
 
 mkdir build-${COMPILER}-${MPI}
 cd build-${COMPILER}-${MPI}
 
-CC=mpicc ../configure --prefix=${INSTALL_PREFIX} --enable-mmap --enable-netcdf4 CFLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}"
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${COMPILER_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${COMPILER_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${COMPILER_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+
 make -j 48
 make install
 make distclean
 
+cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+# Clean up
 cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
 
