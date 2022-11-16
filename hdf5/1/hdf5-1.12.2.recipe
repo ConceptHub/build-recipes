@@ -1,0 +1,493 @@
+NAME="hdf"
+EPOCH=5
+VERSION="1.12.2"
+TAR_VERSION_STRING="1_12_2"
+
+ZLIB_MODULE_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.11"
+
+LIBAEC_MODULE_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+tar xvf ${NAME}${EPOCH}-${TAR_VERSION_STRING}.tar.gz
+cd ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
+export LANG=C
+export LC_ALL=C
+
+
+# Intel oneAPI
+COMPILER="intel"
+internal_COMPILER_C_FLAGS="-diag-disable=10441 -ip -static-intel -march=core-avx2 -fma -fPIC"
+internal_COMPILER_CXX_FLAGS="-diag-disable=10441 -ip -static-intel -march=core-avx2 -fma -fPIC"
+internal_COMPILER_Fortran_FLAGS="-diag-disable=10441 -ip -static-intel -march=core-avx2 -fma -fPIC"
+
+# Intel oneAPI / Serial
+module purge
+module load intel
+module load compiler/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+module load gcc/12/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icc \
+      -DCMAKE_CXX_COMPILER=icpc \
+      -DCMAKE_Fortran_COMPILER=ifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=OFF \
+      -DLARGE_PARALLEL_IO=OFF \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+# Intel oneAPI / Open MPI
+MPI="openmpi"
+
+module purge
+module load intel
+module load compiler/latest
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+module load gcc/12/latest
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+# Intel oneAPI / MPICH
+MPI="mpich"
+
+module purge
+module load intel
+module load compiler/latest
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+module load gcc/12/latest
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+internal_COMPILER_C_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC"
+internal_COMPILER_CXX_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC"
+internal_COMPILER_Fortran_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC"
+
+# NVIDIA HPC SDK / Serial
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_CXX_COMPILER=nvc++ \
+      -DCMAKE_Fortran_COMPILER=nvfortran \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=OFF \
+      -DLARGE_PARALLEL_IO=OFF \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+# NVIDIA HPC SDK / Open MPI
+MPI="openmpi"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+# NVIDIA HPC SDK / MPICH
+MPI="mpich"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+
+# AMD AOCC
+COMPILER="aocc"
+internal_COMPILER_C_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+internal_COMPILER_CXX_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+internal_COMPILER_Fortran_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+
+# AMD AOCC / Serial
+module purge
+module load amd/${COMPILER}/3/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_Fortran_COMPILER=flang \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=OFF \
+      -DLARGE_PARALLEL_IO=OFF \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+# AMD AOCC / Open MPI
+MPI="openmpi"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+# AMD AOCC / MPICH
+MPI="mpich"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+internal_COMPILER_C_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+internal_COMPILER_CXX_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+internal_COMPILER_Fortran_FLAGS="-mtune=native -mavx2 -mfma -fPIC"
+
+# GNU GCC / Serial
+module purge
+module load ${COMPILER}/12/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DCMAKE_Fortran_COMPILER=gfortran \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=OFF \
+      -DLARGE_PARALLEL_IO=OFF \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+# GNU GCC / Open MPI
+MPI="openmpi"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+
+# GNU GCC / MPICH
+MPI="mpich"
+
+module purge
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -Dlibaec_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}/lib/libz.so \
+      -DSZIP_LIBRARY=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/lib64/libsz.so \
+      -DSZIP_INCLUDE_DIR=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${EPOCH}/${VERSION}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 48 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
