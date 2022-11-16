@@ -1,32 +1,22 @@
-NAME="BLAS"
-INSTALL_NAME="blas"
-VERSION="3.10.0"
+NAME="blas"
+PACKAGE_NAME="BLAS"
+MAJOR_VERSION="3"
+MINOR_VERSION="10.0"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
 
 export LANG=C
 export LC_ALL=C
 
-cd ~/build
-rm -fr $NAME-$VERSION
-tar xvf $INSTALL_NAME-$VERSION.tgz
-cd $NAME-$VERSION
+cd ${BUILD_ROOT}
+rm -fr ${PACKAGE_NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tgz
+cd ${PACKAGE_NAME}-${VERSION}
 
-# NVIDIA HPC SDK
-
-module purge
-module load cmake/latest
-module load nvidia
-module load nvhpc/latest
-module load gcc/12/latest
-
-mkdir ~/build/$NAME-$VERSION/build
-cd ~/build/$NAME-$VERSION/build
-
-cmake .. -DCMAKE_Fortran_FLAGS="-fast -Mvect -msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="nvfortran" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-nvidia
-make -j 12 install || exit
-cd ..
-rm -fr ~/build/$NAME-$VERSION/build
 
 # Intel oneAPI
+COMPILER="intel"
 
 module purge
 module load intel
@@ -34,39 +24,123 @@ module load gcc/12/latest
 module load compiler/latest
 module load cmake/latest
 
-mkdir ~/build/$NAME-$VERSION/build
-cd ~/build/$NAME-$VERSION/build
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="ifx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
-cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="ifort" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-intel
-make -j 12 install || exit
-cd ..
-rm -fr ~/build/$NAME-$VERSION/build
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+rm -fr build-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="ifx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-fast -Mvect -msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="nvfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+rm -fr build-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-fast -Mvect -msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="nvfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
 
 # AMD AOCC
+COMPILER="aocc"
 
 module purge
 module load amd/aocc/latest
 module load cmake/latest
 
-mkdir ~/build/$NAME-$VERSION/build
-cd ~/build/$NAME-$VERSION/build
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="flang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
-cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="flang" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-aocc
-make -j 12 install || exit
-cd ..
-rm -fr ~/build/$NAME-$VERSION/build
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+rm -fr build-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="flang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
 
 # GNU GCC
+COMPILER="gcc"
 
 module purge
 module load gcc/12/latest
 module load cmake/latest
 
-mkdir ~/build/$NAME-$VERSION/build
-cd ~/build/$NAME-$VERSION/build
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="gfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
 
-cmake .. -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2" -DCMAKE_Fortran_COMPILER="gfortran" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/software/$INSTALL_NAME/$VERSION-gcc
-make -j 12 install || exit
-cd ..
-rm -fr ~/build/$NAME-$VERSION/build
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+rm -fr build-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="gfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${PACKAGE_NAME}-${VERSION}
 
