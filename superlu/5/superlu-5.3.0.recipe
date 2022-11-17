@@ -1,0 +1,127 @@
+NAME="superlu"
+MAJOR_VERSION="5"
+MINOR_VERSION="3.0"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+COMPILER_C_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_CXX_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_Fortran_FLAGS="-mavx2 -mfma -fPIC"
+
+module purge
+module load intel
+module load gcc/12/latest
+module load compiler/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="${COMPILER_C_FLAGS}" \
+      -DCMAKE_C_COMPILER="icx" \
+      -DCMAKE_CXX_FLAGS="${COMPILER_CXX_FLAGS}" \
+      -DCMAKE_CXX_COMPILER="icpx" \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_Fortran_COMPILER="ifx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+COMPILER_C_FLAGS="-fast -Mvect -mavx2 -fPIC"
+COMPILER_CXX_FLAGS="-fast -Mvect -mavx2 -fPIC"
+COMPILER_Fortran_FLAGS="-fast -Mvect -mavx2 -fPIC"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="${COMPILER_C_FLAGS}" \
+      -DCMAKE_C_COMPILER="nvc" \
+      -DCMAKE_CXX_FLAGS="${COMPILER_CXX_FLAGS}" \
+      -DCMAKE_CXX_COMPILER="nvc++" \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_Fortran_COMPILER="nvfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# AMD AOCC
+COMPILER="aocc"
+COMPILER_C_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_CXX_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_Fortran_FLAGS="-mavx2 -mfma -fPIC"
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="${COMPILER_C_FLAGS}" \
+      -DCMAKE_C_COMPILER="clang" \
+      -DCMAKE_CXX_FLAGS="${COMPILER_CXX_FLAGS}" \
+      -DCMAKE_CXX_COMPILER="clang++" \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_Fortran_COMPILER="flang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+COMPILER_C_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_CXX_FLAGS="-mavx2 -mfma -fPIC"
+COMPILER_Fortran_FLAGS="-mavx2 -mfma -fPIC"
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="${COMPILER_C_FLAGS}" \
+      -DCMAKE_C_COMPILER="gcc" \
+      -DCMAKE_CXX_FLAGS="${COMPILER_CXX_FLAGS}" \
+      -DCMAKE_CXX_COMPILER="g++" \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_Fortran_COMPILER="gfortran" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
