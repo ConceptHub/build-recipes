@@ -1,0 +1,91 @@
+NAME="sqlite"
+MAJOR_VERSION="3"
+MINOR_VERSION="40.0"
+FILE_VERSION="3400000"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-autoconf-${FILE_VERSION}
+tar xvf ${NAME}-autoconf-${FILE_VERSION}.tar.gz
+cd ${NAME}-autoconf-${FILE_VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load zlib/1/1.2.13-${COMPILER}
+
+./configure \
+     --enable-readline \
+     --enable-shared \
+     --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} \
+     CC=icx CFLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -O3 -fPIC"
+
+make -j 24 install
+make distclean
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+# loading zlib is not needed here - nvc links the code automatically to
+# zlib library included in NVIDIA HPC SDK installation
+
+./configure \
+     --enable-readline \
+     --enable-shared \
+     --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} \
+     CC=nvc CFLAGS="-fast -Mvect -Mcache_align -msse3 -msse4.1 -mavx -mavx2 -mavx2 -O3 -fPIC"
+
+make -j 24 install
+make distclean
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest
+module load zlib/1/1.2.13-${COMPILER}
+
+./configure \
+     --enable-readline \
+     --enable-shared \
+     --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} \
+     CC=clang CFLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -O3 -fPIC"
+
+make -j 24 install
+make distclean
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+module load zlib/1/1.2.13-${COMPILER}
+
+./configure \
+     --enable-readline \
+     --enable-shared \
+     --prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} \
+     CC=gcc CFLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -O3 -fPIC"
+
+make -j 24 install
+
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-autoconf-${FILE_VERSION}
+
