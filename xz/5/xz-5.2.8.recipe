@@ -1,0 +1,81 @@
+NAME="xz"
+MAJOR_VERSION="5"
+MINOR_VERSION="2.8"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="icx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+#
+# NOT YET AVAILABLE - COMPILER FAILS
+#
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="clang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="gcc" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 48 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
