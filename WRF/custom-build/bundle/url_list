@@ -1,0 +1,7 @@
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/00_download
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/01_zlib.slurm
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/02_libaec.slurm
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/03_hdf5.slurm
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/04_netcdf-c.slurm
+https://gitlab.discoverer.bg/vkolev/recipes/-/raw/main/WRF/custom-build/bundle/05_netcdf-fortran.slurm
+
