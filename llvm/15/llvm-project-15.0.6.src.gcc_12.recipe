@@ -1,7 +1,7 @@
 NAME="llvm-project"
 INSTALL_NAME="llvm"
 MAJOR_VERSION="15"
-MINOR_VERSION="0.5"
+MINOR_VERSION="0.6"
 
 BUILD_DIR=~/build
 
