@@ -12,14 +12,11 @@
 #SBATCH -e slurm.%j.err        # STDERR
 
 module purge
-module load gromacs/2022/latest-intelllvm-mkl-nogpu-intelmpi
+module load gromacs/2022/latest-intel-fftw3-openblas-nogpu-openmpi
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 export OMP_PLACES=cores
 export OMP_PROC_BIND=spread
-export I_MPI_PIN=1
-export I_MPI_PIN_DOMAIN=omp:platform
-export FI_PROVIDER=verbs
 export UCX_NET_DEVICES=mlx5_0:1
 
 cd $SLURM_SUBMIT_DIR

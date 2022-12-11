@@ -13,7 +13,7 @@
 #SBATCH -e slurm.%j.err        # STDERR
 
 module purge
-module load gromacs/2022/latest-intelllvm-mkl-nogpu-threadmpi
+module load gromacs/2022/latest-intel-fftw3-openblas-nogpu-threadmpi
 
 cd $SLURM_SUBMIT_DIR
 
