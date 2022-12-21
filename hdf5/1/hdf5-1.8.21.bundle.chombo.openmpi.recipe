@@ -1,0 +1,75 @@
+NAME="hdf"
+EPOCH=5
+VERSION="1.8.21"
+TAR_VERSION_STRING="1_8_21"
+
+ZLIB_MODULE_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.11"
+
+LIBAEC_MODULE_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+BUILD_ROOT=~/build
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+tar xvf ${NAME}${EPOCH}-${TAR_VERSION_STRING}.tar.gz
+cd ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
+export LANG=C
+export LC_ALL=C
+
+
+# Intel oneAPI / Open MPI
+COMPILER="intel"
+MPI="openmpi"
+
+module purge
+module load intel
+module load compiler/latest
+module load ${MPI}/4/${COMPILER}/latest
+module load ${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER}
+module load ${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER}
+module load gcc/12/latest
+
+./configure \
+    CC=mpicc \
+    FC=mpifort \
+    CFLAGS="-diag-disable=10441 -mavx2 -mfma -mtune=native" \
+    FCFLAGS="-diag-disable=10441 -mavx2 -mfma -mtune=native" \
+    --enable-parallel \
+    --enable-production \
+    --enable-fortran \
+    --enable-fortran2003 \
+    --with-default-api-version=v16 \
+    --with-zlib=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER} \
+    --with-szlib=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER} \
+    --prefix=/opt/software/bundles/Chombo/${NAME}/${VERSION}-${MPI}-${COMPILER}
+
+make -j 48 install || exit
+make distclean
+
+./configure \
+    CC=icc \
+    FC=ifort \
+    CFLAGS="-diag-disable=10441 -mavx2 -mfma -mtune=native" \
+    FCFLAGS="-diag-disable=10441 -mavx2 -mfma -mtune=native" \
+    --enable-production \
+    --enable-fortran \
+    --enable-fortran2003 \
+    --with-default-api-version=v16 \
+    --with-zlib=/opt/software/${ZLIB_MODULE_NAME}/${ZLIB_MAJOR_VERSION}/${ZLIB_VERSION}-${COMPILER} \
+    --with-szlib=/opt/software/${LIBAEC_MODULE_NAME}/${LIBAEC_MAJOR_VERSION}/${LIBAEC_VERSION}-${COMPILER} \
+    --prefix=/opt/software/bundles/Chombo/${NAME}/${VERSION}-${COMPILER}
+
+make -j 48 install || exit
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
