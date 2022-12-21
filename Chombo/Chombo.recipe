@@ -1,0 +1,42 @@
+NAME=Chombo
+
+BUILD_DIR=~/build/
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}
+
+# Get the code:
+git clone https://github.com/GRChombo/Chombo.git || exit
+
+cd ${BUILD_DIR}/${NAME}/lib
+
+# Load the necessary modules:
+module purge
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/4.1.4
+
+# Create lib/mk/Make.defs.local
+
+cat << EOF > mk/Make.defs.local
+DIM=3
+CXX=icpc
+cxxoptflags=-diag-disable=10441
+cxxcppflags=-diag-disable=10441
+foptflags=-diag-disable=10441
+fcppflags=-diag-disable=10441
+FC=ifort
+MPI=TRUE
+OPENMPCC=TRUE
+FFTWDIR=/opt/software/fftw/3/3.3.10-intel-openmpi
+HDFINCFLAGS=-I/opt/software/chombo/hdf/1.8.21-intel/include
+HDFLIBFLAGS=-L/opt/software/chombo/hdf/1.8.21-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
+HDFMPIINCFLAGS=-I/opt/software/chombo/hdf/1.8.21-openmpi-intel/include
+HDFMPILIBFLAGS=-L/opt/software/chombo/hdf/1.8.21-openmpi-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
+EOF
+
+# Build the code:
+make all CXX=icpc FC=ifort MPI=TRUE DEBUG=FALSE USE_FFTW=TRUE
+
+# Upload the installation to the software repo:
+rsync -vrtl --progress --delete-after ${BUILD_DIR}/${NAME} /opt/software/
