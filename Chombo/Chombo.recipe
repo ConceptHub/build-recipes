@@ -29,10 +29,10 @@ FC=ifort
 MPI=TRUE
 OPENMPCC=TRUE
 FFTWDIR=/opt/software/fftw/3/3.3.10-intel-openmpi
-HDFINCFLAGS=-I/opt/software/chombo/hdf/1.8.21-intel/include
-HDFLIBFLAGS=-L/opt/software/chombo/hdf/1.8.21-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
-HDFMPIINCFLAGS=-I/opt/software/chombo/hdf/1.8.21-openmpi-intel/include
-HDFMPILIBFLAGS=-L/opt/software/chombo/hdf/1.8.21-openmpi-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
+HDFINCFLAGS=-I/opt/software/bundles/Chombo/hdf/1.8.21-intel/include
+HDFLIBFLAGS=-L/opt/software/bundles/Chombo/hdf/1.8.21-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
+HDFMPIINCFLAGS=-I/opt/software/bundles/Chombo/hdf/1.8.21-openmpi-intel/include
+HDFMPILIBFLAGS=-L/opt/software/bundles/Chombo/hdf/1.8.21-openmpi-intel/lib -L/opt/software/openblas/0/0.3.21-intel/lib64 -lhdf5_hl -lhdf5 -lopenblas_64
 EOF
 
 # Build the code:
