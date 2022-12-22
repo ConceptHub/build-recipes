@@ -1,6 +1,8 @@
 NAME=Chombo
 
-BUILD_DIR=~/build/
+BUILD_DIR=/discofs/`whoami`/build/
+
+if [ ! -d ${BUILD_DIR} ] ; then mkdir -p ${BUILD_DIR} ; fi
 
 cd ${BUILD_DIR}
 rm -fr ${NAME}
@@ -38,5 +40,5 @@ EOF
 # Build the code:
 make all CXX=icpc FC=ifort MPI=TRUE DEBUG=FALSE USE_FFTW=TRUE
 
-# Upload the installation to the software repo:
-rsync -vrtl --progress --delete-after ${BUILD_DIR}/${NAME} /opt/software/
+# Upload the installation to the software repo (users do not need this or at least in the form given bellow):
+#rsync -vrtl --progress --delete-after ${BUILD_DIR}/${NAME} /opt/software/
