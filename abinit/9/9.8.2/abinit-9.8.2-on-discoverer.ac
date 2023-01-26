@@ -1,0 +1,62 @@
+# Created by Veselin Kolev <v.kolev@discoverer.bg> on January 24, 2023
+
+# installation location
+prefix=/opt/software/abinit/9/9.8.2-intel-openmpi
+
+CC=mpicc
+CXX=mpic++
+FC=mpifort
+F90=mpif90
+F77=mpif77
+CFLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC ${CFLAGS}"
+CPPFLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC ${CPPFLAGS}"
+CXXFLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC ${CXXFLAGS}"
+FCFLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC ${FCFLAGS}"
+FFLAGS="-ip -static-intel -march=core-avx2 -mfma -fPIC ${FFLAGS}"
+
+enable_openmp="no"
+
+# MPI settings
+with_mpi="yes"
+enable_mpi_io="yes"
+
+NETCDF_FORTRAN_LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/lib"
+NETCDF_FORTRAN_FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_FORTRAN_CXXFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_FORTRAN_CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_FORTRAN_CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+
+NETCDF_LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/lib"
+NETCDF_FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_CXXFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+NETCDF_CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+
+HDF5_LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/lib"
+HDF5_FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+HDF5_CXXFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+HDF5_CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+HDF5_CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+
+# linear algebra settings
+with_linalg_flavor="openblas"
+LINALG_FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+LINALG_CXXFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+LINALG_CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+LINALG_CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+LINALG_LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/lib -lopenblas -llapack -lblas"
+
+# mandatory libraries
+with_hdf5="yes"
+with_netcdf="yes"
+with_netcdf_fortran="yes"
+with_libxc="yes"
+
+# FFT flavor
+with_fftw3="yes"
+with_fft_flavor="fftw3"
+FFTW3_CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+FFTW3_FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+FFTW3_CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/include"
+FFTW3_LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-intel-openmpi/lib -lfftw3f -lfftw3"
+

@@ -1,0 +1,402 @@
+NAME="abinit"
+VERSION_MAJOR=9
+VERSION_MINOR=8.2
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+BUILD_ROOT=~/build
+
+export LANG=C
+export LC_ALL=C
+
+# Intel oneAPI
+COMPILER="intel"
+MPI="openmpi"
+rm -fr /opt/software/bundles/${NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}-${MPI}
+mkdir -p /opt/software/bundles/${NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}-${MPI}
+
+INSTALL_PREFIX=/opt/software/bundles/${NAME}/${VERSION_MAJOR}/${VERSION}-${COMPILER}-${MPI}
+
+export LD_LIBRARY_PATH=${INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}
+export LDFLAGS="-L${INSTALL_PREFIX}/lib ${LDFLAGS}"
+
+internal_COMPILER_C_FLAGS="-march=core-avx2 -fma -fPIC"
+internal_COMPILER_CXX_FLAGS="-march=core-avx2 -fma -fPIC"
+internal_COMPILER_Fortran_FLAGS="-march=core-avx2 -fma -fPIC"
+
+export CFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/include ${CFLAGS}"
+export CPPFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/include ${CPPFLAGS}"
+export CXXFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/include ${CXXFLAGS}"
+export FFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/include ${FFLAGS}"
+export FCFLAGS="-I/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/include ${FCFLAGS}"
+export LDFLAGS="-L/opt/software/bundles/abinit/9/9.8.2-${COMPILER}-${MPI}/lib ${LDFLAGS}"
+
+module purge
+module load cmake/latest
+module load gcc/12/latest
+module load intel
+module load compiler/latest
+module load ${MPI}/4/${COMPILER}/latest
+
+
+# LAPACK
+LAPACK_NAME="lapack"
+LAPACK_MAJOR_VERSION="3"
+LAPACK_MINOR_VERSION="11.0"
+LAPACK_VERSION=${LAPACK_MAJOR_VERSION}.${LAPACK_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${LAPACK_NAME}-${LAPACK_VERSION}
+tar xvf ${LAPACK_NAME}-${LAPACK_VERSION}.tar.gz
+cd ${LAPACK_NAME}-${LAPACK_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="icx" \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="ifx" \
+      -DLAPACKE=ON \
+      -DLAPACKE_WITH_TMG=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${LAPACK_NAME}-${LAPACK_VERSION}
+
+
+# Zlib
+ZLIB_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.13"
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${ZLIB_NAME}-${ZLIB_VERSION}
+tar xvf ${ZLIB_NAME}-${ZLIB_VERSION}.tar.gz
+cd ${ZLIB_NAME}-${ZLIB_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${ZLIB_NAME}-${ZLIB_VERSION}
+
+
+# Libaec
+LIBAEC_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${LIBAEC_NAME}-${LIBAEC_VERSION}
+mkdir -p ${LIBAEC_NAME}-${LIBAEC_VERSION}
+tar xvf ${LIBAEC_NAME}-v${LIBAEC_VERSION}.tar.bz2 --strip-components=1 -C ${LIBAEC_NAME}-${LIBAEC_VERSION}
+cd ${LIBAEC_NAME}-${LIBAEC_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${LIBAEC_NAME}-${LIBAEC_VERSION}
+
+
+# Libxc
+LIBXC_NAME="libxc"
+LIBXC_MAJOR_VERSION="5"
+LIBXC_MINOR_VERSION="2.2"
+LIBXC_VERSION=${LIBXC_MAJOR_VERSION}.${LIBXC_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${LIBXC_NAME}-${LIBXC_VERSION}
+tar xvf ${LIBXC_NAME}-${LIBXC_VERSION}.tar.gz
+cd ${LIBXC_NAME}-${LIBXC_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DDISABLE_KXC=OFF \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=icc \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS} ${CFLAGS}" \
+      -DENABLE_FORTRAN=ON \
+      -DCMAKE_Fortran_COMPILER=ifort \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_Fortran_FLAGS} ${FCFLAGS}" \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${LIBXC_NAME}-${LIBXC_VERSION}
+
+
+# BLAS
+BLAS_NAME="blas"
+BLAS_PACKAGE_NAME="BLAS"
+BLAS_MAJOR_VERSION="3"
+BLAS_MINOR_VERSION="11.0"
+BLAS_VERSION=${BLAS_MAJOR_VERSION}.${BLAS_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${BLAS_PACKAGE_NAME}-${BLAS_VERSION}
+tar xvf ${BLAS_NAME}-${BLAS_VERSION}.tgz
+cd ${BLAS_PACKAGE_NAME}-${BLAS_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_Fortran_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_Fortran_COMPILER="ifx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${BLAS_PACKAGE_NAME}-${BLAS_VERSION}
+
+
+# HDF5
+HDF_NAME="hdf"
+HDF_EPOCH=5
+HDF_VERSION="1.13.3"
+HDF_TAR_VERSION_STRING="1_13_3"
+
+cd ${BUILD_ROOT}
+rm -fr ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${HDF_TAR_VERSION_STRING}
+tar xvf ${HDF_NAME}${HDF_EPOCH}-${HDF_TAR_VERSION_STRING}.tar.gz
+cd ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${HDF_TAR_VERSION_STRING}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS} ${CXXFLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS} ${FCFLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=${INSTALL_PREFIX}/lib/libsz.so \
+      -Dlibaec_INCLUDE_DIR=${INSTALL_PREFIX}/incude \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DZLIB_LIBRARY_RELEASE=${INSTALL_PREFIX}/lib/libz.so \
+      -DSZIP_LIBRARY=${INSTALL_PREFIX}/lib/libsz.so \
+      -DSZIP_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${HDF_TAR_VERSION_STRING}
+
+
+# NetCDF C
+NETCDF_NAME="netcdf-c"
+NETCDF_MAJOR_VERSION="4"
+NETCDF_MINOR_VERSION="9.0"
+NETCDF_VERSION=${NETCDF_MAJOR_VERSION}.${NETCDF_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${NETCDF_NAME}-${NETCDF_VERSION}
+tar xvf ${NETCDF_NAME}-${NETCDF_VERSION}.tar.gz || exit
+cd ${NETCDF_NAME}-${NETCDF_VERSION}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+CC=mpicc \
+   CPP=mpicc \
+   CXX=mpic++ \
+   FC=mpifort \
+   F90=mpif90 \
+   F77=mpif77 \
+   ../configure --prefix=${INSTALL_PREFIX} \
+   --enable-mmap \
+   --enable-netcdf4 \
+   CFLAGS="${internal_COMPILER_C_FLAGS} ${CFLAGS}" \
+   CPPFLAGS="${internal_COMPILER_CXX_FLAGS} ${CPPFLAGS}" \
+   CXXFLAGS="${internal_COMPILER_CXX_FLAGS} ${CXXFLAGS}" \
+   FFLAGS="${internal_COMPILER_Fortran_FLAGS} ${FFLAGS}" \
+   FCFLAGS="${internal_COMPILER_Fortran_FLAGS} ${FCFLAGS}" \
+
+make -j 24 || exit
+make install || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${NETCDF_NAME}-${NETCDF_VERSION}
+
+
+# NetCDF Fortran
+NETCDF_F_NAME="netcdf-fortran"
+NETCDF_F_MAJOR_VERSION="4"
+NETCDF_F_MINOR_VERSION="6.0"
+NETCDF_F_VERSION=${NETCDF_F_MAJOR_VERSION}.${NETCDF_F_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${NETCDF_F_NAME}-${NETCDF_F_VERSION}
+tar xvf ${NETCDF_F_NAME}-${NETCDF_F_VERSION}.tar.gz || exit
+cd ${NETCDF_F_NAME}-${NETCDF_F_VERSION}
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_C_FLAGS="${COMPILER_FLAGS} ${CFLAGS}" \
+      -DCMAKE_CXX_COMPILER=mpic++ \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_Fortran_FLAGS="${COMPILER_FLAGS} ${FCFLAGS}" \
+      -DNETCDF_C_LIBRARY=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/lib/libnetcdf.so \
+      -DNETCDF_C_INCLUDE_DIR=/opt/software/netcdf-c/4/4.9.0-${COMPILER}-${MPI}/include \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${NETCDF_F_NAME}-${NETCDF_F_VERSION}
+
+
+# OpenBLAS
+OPENBLAS_NAME="OpenBLAS"
+OPENBLAS_INSTALL_NAME="openblas"
+OPENBLAS_MAJOR_VERSION="0"
+OPENBLAS_MINOR_VERSION="3.21"
+
+OPENBLAS_VERSION=${OPENBLAS_MAJOR_VERSION}.${OPENBLAS_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${OPENBLAS_NAME}-${OPENBLAS_VERSION}
+tar xvf ${OPENBLAS_NAME}-${OPENBLAS_VERSION}.tar.gz
+cd ${OPENBLAS_NAME}-${OPENBLAS_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_Fortran_COMPILER=ifx \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DUSE_OPENMP=0 \
+      -DINTERFACE64=OFF \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_COLOR_MAKEFILE=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${OPENBLAS_NAME}-${OPENBLAS_VERSION}
+
+
+# FFTW
+FFTW_INSTALL_NAME='fftw'
+FFTW_MAJOR_VERSION=3
+FFTW_MINOR_VERSION=3.10
+
+FFTW_VERSION=${FFTW_MAJOR_VERSION}.${FFTW_MINOR_VERSION}
+
+cd ${BUILD_ROOT}
+rm -fr ${FFTW_INSTALL_NAME}-${FFTW_VERSION}
+tar xvf ${FFTW_INSTALL_NAME}-${FFTW_VERSION}.tar.gz > /dev/null || exit
+cd ${FFTW_INSTALL_NAME}-${FFTW_VERSION}
+
+SIMD="--enable-sse2 --enable-avx --enable-avx2"
+OPTS="--enable-shared"
+
+CFLAGS=""
+FFLAGS=""
+
+CC=icx
+CXX=icpx
+F77=ifx
+MPICC=mpiicc
+
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
+make -j 24 install || exit
+make distclean
+
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
+make -j 24 install || exit
+make distclean
+
+MPICC=mpicc
+
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
+make -j 24 install || exit
+
+cd ${BUILD_ROOT}
+rm -fr ${FFTW_INSTALL_NAME}-${FFTW_VERSION}
+
+# ABINIT
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+mkdir build-${COMPILER}-${MPI}
+cd build-${COMPILER}-${MPI}
+
+../configure --with-config-file=../../abinit-9.8.2-on-discoverer.ac --with-optim-flavor='aggressive'
+
+make -j24 || exit
+make install
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+
