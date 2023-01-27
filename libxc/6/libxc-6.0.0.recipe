@@ -1,0 +1,111 @@
+NAME="libxc"
+MAJOR_VERSION="6"
+MINOR_VERSION="0.0"
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+BUILD_DIR=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
+
+CFLAGS="${CFLAGS} -mfma -fPIC"
+FCFLAGS="${FCFLAGS} -mfma -fPIC"
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS="${CFLAGS} -mavx2" \
+      -DENABLE_FORTRAN=ON \
+      -DCMAKE_Fortran_COMPILER=ifx \
+      -DCMAKE_C_FLAGS="${FCFLAGS} -mavx2" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${CFLAGS} -mp -tp=zen2 -Mcache_align" \
+      -DENABLE_FORTRAN=ON \
+      -DCMAKE_Fortran_COMPILER=nvfortran \
+      -DCMAKE_C_FLAGS="${FCFLAGS} -mp -tp=zen2 -Mcache_align" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/3/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_C_FLAGS="${CFLAGS} -mavx2" \
+      -DENABLE_FORTRAN=ON \
+      -DCMAKE_Fortran_COMPILER=flang \
+      -DCMAKE_C_FLAGS="${FCFLAGS} -mavx2" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_C_FLAGS="${CFLAGS} -mavx2" \
+      -DENABLE_FORTRAN=ON \
+      -DCMAKE_Fortran_COMPILER=gfortran \
+      -DCMAKE_C_FLAGS="${FCFLAGS} -mavx2" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
