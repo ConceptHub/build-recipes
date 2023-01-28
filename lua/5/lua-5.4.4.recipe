@@ -1,19 +1,22 @@
 NAME="lua"
-INSTALL_NAME="lua"
 MAJOR_VERSION="5"
 MINOR_VERSION="4.4"
 
+BUILD_DIR=~/build
+
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
 
 export LANG=C
 export LC_ALL=C
 
-cd ~/build
+cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
-tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
 
 # Intel oneAPI
-
 COMPILER='intel'
 
 module purge
@@ -24,11 +27,28 @@ cd ~/build/$NAME-$VERSION
 
 patch -p0 < ../lua-5.4.4.src.Makefile.patch
 
-CC=icc CXX=icpc make
+CC=icx CXX=icpx make
 
-export INSTALL_TOP=/opt/software/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+export INSTALL_TOP=${INSTALL_PREFIX}-${COMPILER}
+
+make install
+make clean
+
+
+# GNU GCC
+COMPILER='gcc'
+
+module purge
+module load gcc/12/latest
+
+CC=gcc CXX=g++ make
+
+export INSTALL_TOP=${INSTALL_PREFIX}-${COMPILER}
 
 make install
 
+
+# Clean up
+cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
 
