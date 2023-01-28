@@ -1,0 +1,98 @@
+NAME="swig"
+MAJOR_VERSION="4"
+MINOR_VERSION="1.1"
+
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz > /dev/null || exit
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load intel
+module load compiler/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_CXX_COMPILER=icpx \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_CXX_COMPILER=nvc++ \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load cmake/latest
+module load amd/aocc/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load cmake/latest
+module load gcc/10/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DCMAKE_C_FLAGS="-fPIC" \
+      -DCMAKE_CXX_FLAGS="-fPIC" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}.src
+
