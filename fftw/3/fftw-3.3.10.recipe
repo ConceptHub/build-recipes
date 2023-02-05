@@ -8,18 +8,17 @@ VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 BUILDDIR=~/build
 
 rm -fr ${INSTALL_NAME}-${VERSION}
-tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz > /dev/null || exit
 cd ${INSTALL_NAME}-${VERSION}
 
 # NOTE: No need to specify MPI compiler. Once --enable-mpi is specified, the configure
-#       script detects which mpicc compiler to use, based on the paths set by the
+#       script detects which mpicc compiler to employ, based on the paths set by the
 #       environment module.
 
+SIMD="--enable-sse2 --enable-avx --enable-avx2"
+OPTS="--enable-openmp --enable-shared"
 
 # Intel oneAPI / IntelMPI
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
 CFLAGS=""
 FFLAGS=""
 
@@ -33,21 +32,51 @@ module load intel
 module load compiler/latest
 module load mpi/latest
 
-CC=icc
-CXX=icpc
-F77=ifort
+CC=icx
+CXX=icpx
+F77=ifx
 MPICC=mpiicc
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -55,9 +84,6 @@ make distclean
 
 
 # Intel oneAPI / OpenMPI
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
 CFLAGS=""
 FFLAGS=""
 
@@ -71,21 +97,50 @@ module load intel
 module load compiler/latest
 module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
-CC=icc
-CXX=icpc
-F77=ifort
+CC=icx
+CXX=icpx
+F77=ifx
 MPICC=mpicc
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -93,9 +148,6 @@ make distclean
 
 
 # Intel oneAPI / MPICH
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
 CFLAGS=""
 FFLAGS=""
 
@@ -109,21 +161,51 @@ module load intel
 module load compiler/latest
 module load ${MPI_VENDOR}/4/${COMPILER}/latest
 
-CC=icc
-CXX=icpc
-F77=ifort
+CC=icx
+CXX=icpx
+F77=ifx
 MPICC=mpicc
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -131,11 +213,8 @@ make distclean
 
 
 # NVIDIA HPC SDK / OpenMPI
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
-FFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
+CFLAGS="-Mcache_align -fast -Mvect"
+FFLAGS="-Mcache_align -fast -Mvect"
 
 COMPILER='nvidia'
 MPI_VENDOR='openmpi'
@@ -151,16 +230,46 @@ CXX=nvc++
 F77=nvfortran
 MPICC=mpicc
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -168,11 +277,8 @@ make distclean
 
 
 # NVIDIA HPC SDK / MPICH
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
-FFLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2"
+CFLAGS="-tp=zen2 -Mcache_align -fast -Mvect"
+FFLAGS="-tp=zen2 -Mcache_align -fast -Mvect"
 
 COMPILER='nvidia'
 MPI_VENDOR='mpich'
@@ -188,16 +294,46 @@ CXX=nvc++
 F77=nvfortran
 MPICC=mpicc
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} MPICC=${MPICC} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   MPICC=${MPICC} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -205,11 +341,8 @@ make distclean
 
 
 # GCC / MPICH
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-march=znver2 -mtune=native"
-FFLAGS="-march=znver2 -mtune=native"
+CFLAGS=""
+FFLAGS=""
 
 COMPILER='gcc'
 MPI_VENDOR='mpich'
@@ -224,31 +357,62 @@ CC=gcc
 CXX=g++
 F77=gfortran
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
 # Quad precision is supported by GCC but not in MPI
-./configure ${OPTS} --enable-threads --enable-quad-precision CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-threads \
+   --enable-quad-precision \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
 
 # GCC / OpenMPI
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-march=znver2 -mtune=native"
-FFLAGS="-march=znver2 -mtune=native"
+CFLAGS=""
+FFLAGS=""
 
 COMPILER='gcc'
 MPI_VENDOR='openmpi'
@@ -263,31 +427,63 @@ CC=gcc
 CXX=g++
 F77=gfortran
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
 # Quad precision is supported by GCC but not in MPI
-./configure ${OPTS} --enable-threads --enable-quad-precision CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-threads \
+   --enable-quad-precision \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
 
 # AOCC / MPICH
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-march=znver2 -mtune=native"
-FFLAGS="-march=znver2 -mtune=native"
+CFLAGS=""
+FFLAGS=""
 
 COMPILER='aocc'
 MPI_VENDOR='mpich'
@@ -302,16 +498,43 @@ CC=clang
 CXX=clang++
 F77=flang
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
@@ -319,11 +542,8 @@ make distclean
 
 
 # AOCC / OpenMPI
-
-SIMD="--enable-avx2"
-OPTS="--enable-openmp --enable-shared"
-CFLAGS="-march=znver2 -mtune=native"
-FFLAGS="-march=znver2 -mtune=native"
+CFLAGS=""
+FFLAGS=""
 
 COMPILER='aocc'
 MPI_VENDOR='openmpi'
@@ -339,20 +559,46 @@ CC=clang
 CXX=clang++
 F77=flang
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-./configure ${SIMD} ${OPTS} --enable-mpi --enable-threads --enable-single CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${SIMD} \
+   ${OPTS} --enable-sse \
+   --enable-mpi \
+   --enable-threads \
+   --enable-single \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 make distclean
 
-# AVX2 requires single or double precision.
-./configure ${OPTS} --enable-mpi --enable-threads --enable-long-double CC=${CC} CXX=${CXX} F77=${F77} --prefix=${INSTALL_PREFIX}
+./configure \
+   ${OPTS} \
+   --enable-mpi \
+   --enable-threads \
+   --enable-long-double \
+   CC=${CC} \
+   CXX=${CXX} \
+   F77=${F77} \
+   --prefix=${INSTALL_PREFIX}
+
 make -j 48 install || exit
 
 # There is no quad precission support in MPI, neither there is a support for AMD AOCC LLVM.
 
 cd ${BUILDDIR}
 rm -fr ${INSTALL_NAME}-${VERSION}
-
