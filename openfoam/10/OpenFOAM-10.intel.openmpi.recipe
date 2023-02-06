@@ -1,0 +1,43 @@
+NAME="OpenFOAM"
+VERSION="10"
+
+THIRD_PARTY_NAME="ThirdParty"
+THIRD_PARTY_VERSION=10
+
+BUILD_DIR=${HOME}/build
+INSTALL_PREFIX=/opt/software/${NAME}
+
+THIRD_PARTY_DIR=${THIRD_PARTY_NAME}-${THIRD_PARTY_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION} || exit
+mkdir ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}-version-${VERSION}.tar.gz -C ${NAME}-${VERSION} --strip-components=1 > /dev/null
+cd ${NAME}-${VERSION}
+
+tar xvf ../${THIRD_PARTY_NAME}-${THIRD_PARTY_VERSION}.tar.gz > /dev/null
+
+patch -p0 < ../${NAME}-${VERSION}.etc.bashrc.patch
+
+source etc/bashrc
+
+cd ${THIRD_PARTY_DIR}
+
+WM_CXX=icpc
+WM_CC=icc
+
+./Allwmake -j 24
+
+WM_CXX=icpx
+WM_CC=icx
+
+cd ..
+
+./Allwmake -j 24
+
+cd ${BUILD_DIR}
+
+[ ! -e ${INSTALL_PREFIX} ] && mkdir ${INSTALL_PREFIX}
+rsync -vrtl --delete-after ${NAME}-${VERSION} ${INSTALL_PREFIX}/
+
+rm -fr ${NAME}-${VERSION}
