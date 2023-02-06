@@ -17,6 +17,11 @@ cd ${NAME}-${VERSION}
 
 tar xvf ../${THIRD_PARTY_NAME}-${THIRD_PARTY_VERSION}.tar.gz > /dev/null
 
+module purge
+module load intel
+module load compiler/latest
+module load openmpi/4/intel/latest
+
 patch -p0 < ../${NAME}-${VERSION}.etc.bashrc.patch
 
 source etc/bashrc
@@ -41,3 +46,4 @@ cd ${BUILD_DIR}
 rsync -vrtl --delete-after ${NAME}-${VERSION} ${INSTALL_PREFIX}/
 
 rm -fr ${NAME}-${VERSION}
+
