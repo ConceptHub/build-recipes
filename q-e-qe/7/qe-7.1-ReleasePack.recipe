@@ -1,5 +1,4 @@
 NAME='qe'
-INSTALL_NAME='qe'
 MAJOR_VERSION=7
 MINOR_VERSION=1
 BUILD_DIR=~/build
@@ -9,29 +8,69 @@ VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
 PACKAGE_NAME=${NAME}-${VERSION}
 PACKAGE_FILE=${PACKAGE_NAME}-ReleasePack.tar.gz
 
-# ===
+# === NO EDITS BELLOW THIS LINE ===
 
 cd ${BUILD_DIR}
 rm -fr ${PACKAGE_NAME}
 tar xvf ${PACKAGE_FILE}
 cd ${PACKAGE_NAME}
 
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}
+
+# Open MPI builds
+MPI="openmpi"
+
+# Intel oneAPI + Open MPI + BLAS + LAPACK + FFTW3
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load ${COMPILER}
+module load compiler/latest
+module load blas/latest-${COMPILER}
+module load lapack/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+module load fftw/3/latest-${COMPILER}-${MPI}
+
+LDFLAGS+=" -llapack -lblas"
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_FLAGS="-O3 -mtune=native -ipo" \
+      -DCMAKE_Fortran_FLAGS="-O3 -mtune=native -ipo" \
+      -DQE_ENABLE_OPENMP=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI}
+
+
+# NVIDIA HPC SDK + Open MPI + BLAS + LAPACK + FFTW3
+COMPILER="nvidia"
+
 module purge
 module load cmake/latest
 module load nvidia
 module load nvhpc-nompi/latest
-module load blas/latest-nvidia
-module load lapack/latest-nvidia
-module load openmpi/4/nvidia/latest
-module load fftw/3/latest-nvidia-openmpi
+module load blas/latest-${COMPILER}
+module load lapack/latest-${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+module load fftw/3/latest-${COMPILER}-${MPI}
 
-INSTALL_PREFIX=/opt/software/amd/${INSTALL_NAME}/$MAJOR_VERSION/$MAJOR_VERSION.$MINOR_VERSION
+LDFLAGS+=" -llapack -lblas"
 
-cmake -B build-${COMPILER} -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpifort -DCMAKE_C_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" -DCMAKE_Fortran_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" -DQE_ENABLE_OPENMP=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" \
+      -DCMAKE_Fortran_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" \
+      -DQE_ENABLE_OPENMP=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}-${MPI}
 
-cmake --build build-${COMPILER} -j 48 || exit
-#ctest --test-dir build-${COMPILER} || exit
-cmake --install build-${COMPILER}
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI}
 
 cd ${BUILD_DIR}
 rm -fr ${PACKAGE_NAME}
+
