@@ -51,7 +51,7 @@ COMPILER="nvidia"
 
 module purge
 module load cmake/latest
-module load nvidia
+module load ${COMPILER}
 module load nvhpc-nompi/latest
 module load blas/latest-${COMPILER}
 module load lapack/latest-${COMPILER}
