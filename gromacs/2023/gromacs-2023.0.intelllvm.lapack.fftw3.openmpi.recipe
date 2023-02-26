@@ -1,0 +1,114 @@
+NAME="gromacs"
+MAJOR_VERSION=2023
+MINOR_VERSION=0
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+TAR_STORAGE_DIR=~/build
+ROOT_DIR=/opt/software
+
+
+# DO NOT EDIT BELLOW THIS LINE
+
+
+# Derive both build and install directory based on ROOT_DIR:
+BUILD_DIR=${ROOT_DIR}/${NAME}/${MAJOR_VERSION}/tmp
+INSTALL_PREFIX=${ROOT_DIR}/${NAME}/${MAJOR_VERSION}/${VERSION}
+
+
+# Clean up the build environment and uncompress the tarball:
+mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR} || exit
+rm -fr ${NAME}-${MAJOR_VERSION}
+tar xvf ${TAR_STORAGE_DIR}/${NAME}-${MAJOR_VERSION}.tar.gz >> /dev/null || exit
+cd ${NAME}-${MAJOR_VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+MPI="openmpi"
+MODEL="${COMPILER}-fftw3-openblas-nogpu-${MPI}"
+
+FFTWF_INCLUDE_DIR=/opt/software/fftw/3/3.3.10-${COMPILER}-${MPI}/include
+FFTWF_LIBRARY=/opt/software/fftw/3/3.3.10-${COMPILER}-${MPI}/lib/libfftw3f.so
+
+module purge
+module load ${MPI}/4/${COMPILER}/4.1.5
+module load cmake/latest
+module load zlib/1/latest-intel
+module load openblas/0/0.3.21-${COMPILER}
+module load gcc/12/latest
+
+cmake -B build-intel-fftw3-openblas-nogpu-openmpi \
+   -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${MODEL} \
+   -DGMX_MPI=ON \
+   -DGMX_OPENMP=ON \
+   -DGMX_GPU=OFF \
+   -DGMX_HWLOC=OFF \
+   -DGMX_OPENMP_MAX_THREADS=256 \
+   -DGMX_SIMD=AVX2_256 \
+   -DGMX_FFT_LIBRARY=fftw3 \
+   -DFFTWF_INCLUDE_DIR=${FFTWF_INCLUDE_DIR} \
+   -DFFTWF_LIBRARY=${FFTWF_LIBRARY} \
+   -DCMAKE_C_COMPILER=icx \
+   -DCMAKE_CXX_COMPILER=icpx \
+   -DBUILD_SHARED_LIBS=ON \
+   -DGMX_THREAD_MPI=OFF \
+   -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native ${CFLAGS}" \
+   -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native ${CXXFLAGS}"
+
+cmake --build build-${MODEL} -j 48
+cmake --install build-${MODEL}
+
+
+MPI="threadmpi"
+MODEL="${COMPILER}-fftw3-openblas-nogpu-${MPI}"
+
+cmake -B build-${MODEL} \
+   -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${MODEL} \
+   -DGMX_MPI=OFF \
+   -DGMX_OPENMP=ON \
+   -DGMX_GPU=OFF \
+   -DGMX_HWLOC=OFF \
+   -DGMX_OPENMP_MAX_THREADS=256 \
+   -DGMX_FFT_LIBRARY=fftw3 \
+   -DFFTWF_INCLUDE_DIR=${FFTWF_INCLUDE_DIR} \
+   -DFFTWF_LIBRARY=${FFTWF_LIBRARY} \
+   -DGMX_SIMD=AVX2_256 \
+   -DCMAKE_C_COMPILER=icx \
+   -DCMAKE_CXX_COMPILER=icpx \
+   -DBUILD_SHARED_LIBS=ON \
+   -DGMX_THREAD_MPI=ON \
+   -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native ${CFLAGS}" \
+   -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native ${CXXFLAGS}"
+
+cmake --build build-${MODEL} -j 48
+cmake --install build-${MODEL}
+
+MPI="nompi"
+MODEL="${COMPILER}-fftw3-openblas-nogpu-${MPI}"
+
+cmake -B build-${MODEL} \
+   -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${MODEL} \
+   -DGMX_MPI=OFF \
+   -DGMX_OPENMP=ON \
+   -DGMX_GPU=OFF \
+   -DGMX_HWLOC=OFF \
+   -DGMX_OPENMP_MAX_THREADS=256 \
+   -DGMX_FFT_LIBRARY=fftw3 \
+   -DFFTWF_INCLUDE_DIR=${FFTWF_INCLUDE_DIR} \
+   -DFFTWF_LIBRARY=${FFTWF_LIBRARY} \
+   -DGMX_SIMD=AVX2_256 \
+   -DCMAKE_C_COMPILER=icx \
+   -DCMAKE_CXX_COMPILER=icpx \
+   -DBUILD_SHARED_LIBS=ON \
+   -DGMX_THREAD_MPI=OFF \
+   -DCMAKE_C_FLAGS="-mfma -march=znver2 -mtune=native ${CFLAGS}" \
+   -DCMAKE_CXX_FLAGS="-mfma -march=znver2 -mtune=native ${CXXFLAGS}"
+
+cmake --build build-${MODEL} -j 48
+cmake --install build-${MODEL}
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${MAJOR_VERSION}
