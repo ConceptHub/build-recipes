@@ -38,7 +38,7 @@ module load zlib/1/latest-intel
 module load openblas/0/0.3.21-${COMPILER}
 module load gcc/12/latest
 
-cmake -B build-intel-fftw3-openblas-nogpu-openmpi \
+cmake -B build-${MODEL} \
    -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${MODEL} \
    -DGMX_MPI=ON \
    -DGMX_OPENMP=ON \
