@@ -25,6 +25,7 @@ cd ${NAME}-${VERSION}
 COMPILER='intel'
 
 module purge
+module load cmake/latest
 module load intel
 module load compiler/latest
 module load libjpeg-turbo/2/latest-${COMPILER}
@@ -45,6 +46,7 @@ cmake --install build-${COMPILER}
 COMPILER='nvidia'
 
 module purge
+module load cmake/latest
 module load nvidia
 module load nvhpc-nompi/latest
 module load libjpeg-turbo/2/latest-${COMPILER}
@@ -65,6 +67,7 @@ cmake --install build-${COMPILER}
 COMPILER='aocc'
 
 module purge
+module load cmake/latest
 module load amd/aocc/latest
 module load libjpeg-turbo/2/latest-${COMPILER}
 
@@ -84,6 +87,7 @@ cmake --install build-${COMPILER}
 COMPILER='gcc'
 
 module purge
+module load cmake/latest
 module load libjpeg-turbo/2/latest-${COMPILER}
 module load gcc/11/latest
 
