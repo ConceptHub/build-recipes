@@ -1,0 +1,38 @@
+NAME="cmake"
+VERSION_MAJOR="3"
+VERSION_MINOR="25.2"
+
+BUILD_DIR=~/build
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER="gcc" \
+      -DCMAKE_CXX_COMPILER="g++" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${VERSION_MAJOR}/${VERSION}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
