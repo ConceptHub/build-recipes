@@ -1,0 +1,79 @@
+NAME='qe'
+MAJOR_VERSION=6
+MINOR_VERSION=8
+BUILD_DIR=~/build
+
+OPENBLAS_VERSION="0.3.20"
+FFTW3_MAJOR="3"
+FFTW3_VERSION="3.3.10"
+OPENMPI_MAJOR="4"
+OPENMPI_VERSION="4.1.4"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+PACKAGE_NAME=${NAME}-${VERSION}
+PACKAGE_FILE=${PACKAGE_NAME}-ReleasePack.tgz
+
+# === NO EDITS BELLOW THIS LINE ===
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
+tar xvf ${PACKAGE_FILE}
+cd ${PACKAGE_NAME}
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${MAJOR_VERSION}.${MINOR_VERSION}
+
+# Open MPI builds
+MPI="openmpi"
+
+# Intel oneAPI + Open MPI + BLAS + LAPACK + FFTW3
+COMPILER="intel"
+
+module purge
+module load cmake/latest
+module load ${COMPILER}
+module load compiler/latest
+module load openblas/${OPENBLAS_VERSION}-${COMPILER}
+module load ${MPI}/${OPENMPI_MAJOR}/${COMPILER}/${OPENMPI_VERSION}
+module load fftw/${FFTW3_MAJOR}/${FFTW3_VERSION}-${COMPILER}-${MPI}
+
+LDFLAGS+=" -lopenblas"
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_FLAGS="-O3 -mtune=native -ipo" \
+      -DCMAKE_Fortran_FLAGS="-O3 -mtune=native -ipo" \
+      -DQE_ENABLE_OPENMP=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI}
+
+
+# NVIDIA HPC SDK + Open MPI + BLAS + LAPACK + FFTW3
+COMPILER="nvidia"
+
+module purge
+module load cmake/latest
+module load ${COMPILER}
+module load nvhpc-nompi/latest
+module load openblas/${OPENBLAS_VERSION}-${COMPILER}
+module load ${MPI}/OPENMPI_MAJOR/${COMPILER}/OPENMPI_VERSION
+module load fftw/${FFTW3_MAJOR}/${FFTW3_VERSION}-${COMPILER}-${MPI}
+
+LDFLAGS+=" -lopenblas"
+
+cmake -B build-${COMPILER}-${MPI} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" \
+      -DCMAKE_Fortran_FLAGS="-O3 -tp zen2 -Mcache_align -fastsse -Mvect=noaltcode" \
+      -DQE_ENABLE_OPENMP=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}-${MPI}
+
+cmake --build build-${COMPILER}-${MPI} -j 24 || exit
+cmake --install build-${COMPILER}-${MPI}
+
+cd ${BUILD_DIR}
+rm -fr ${PACKAGE_NAME}
