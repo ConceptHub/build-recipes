@@ -1,0 +1,104 @@
+NAME="jasper-version"
+INSTALL_NAME="jasper"
+VERSION_MAJOR=4
+VERSION_MINOR=0.0
+
+JPEG_LIBRARY_RELEASE=/opt/software/libjpeg-turbo/2/2.1.5.1
+JPEG_INCLUDE_DIR=/opt/software/libjpeg-turbo/2/2.1.5.1
+
+BUILD_DIR=~/build
+INSTALL_PREFIX=/opt/software
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+INSTALL_PREFIX+=${INSTALL_NAME}/${VERSION_MAJOR}/${VERSION}
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz > /dev/null
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER='intel'
+
+module purge
+module load intel
+module load compiler/latest
+module load libjpeg-turbo/2/latest-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS="-O3 -march=core-avx2 -mfma $CFLAGS" \
+      -DJPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}-${COMPILER}/lib64/libjpeg.a \
+      -DJPEG_INCLUDE_DIR=${JPEG_INCLUDE_DIR}-${COMPILER}/include \
+      -DJAS_ENABLE_DOC=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+
+# NVIDIA HPC SDK
+COMPILER='nvidia'
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load libjpeg-turbo/2/latest-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="-O3 -Mvect=simd:256 -Mcache_align -fma $CFLAGS" \
+      -DJPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}-${COMPILER}/lib64/libjpeg.a \
+      -DJPEG_INCLUDE_DIR=${JPEG_INCLUDE_DIR}-${COMPILER}/include \
+      -DJAS_ENABLE_DOC=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+
+# AMD AOCC
+COMPILER='aocc'
+
+module purge
+module load amd/aocc/latest
+module load libjpeg-turbo/2/latest-${COMPILER}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_C_FLAGS="-O3 -march=znver2 -mtune=znver2 -mfma $CFLAGS" \
+      -DJPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}-${COMPILER}/lib64/libjpeg.a \
+      -DJPEG_INCLUDE_DIR=${JPEG_INCLUDE_DIR}-${COMPILER}/include \
+      -DJAS_ENABLE_DOC=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+
+# GNU GCC
+COMPILER='gcc'
+
+module purge
+module load libjpeg-turbo/2/latest-${COMPILER}
+module load gcc/11/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_C_FLAGS="-O3 -march=znver2 -mtune=znver2 -mfma $CFLAGS" \
+      -DJPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}-${COMPILER}/lib64/libjpeg.a \
+      -DJPEG_INCLUDE_DIR=${JPEG_INCLUDE_DIR}-${COMPILER}/include \
+      -DJAS_ENABLE_DOC=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
