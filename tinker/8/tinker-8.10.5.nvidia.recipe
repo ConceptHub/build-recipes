@@ -1,0 +1,48 @@
+NAME='tinker'
+MAJOR_VERSION=8
+MINOR_VERSION=10.5
+
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+FILE_NAME=${NAME}-${VERSION}'.tar.gz'
+
+
+# NVIDIA HPC SDK
+COMPILER='nvidia'
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}
+tar xvf ${FILE_NAME}
+cd ${NAME}
+
+module purge
+module load ${COMPILER}
+module load nvhpc-nompi/latest
+
+INSTALL_PREFIX=/opt/software/$NAME/$MAJOR_VERSION/${VERSION}-${COMPILER}
+
+export LANG=C
+export LC_ALL=C
+
+cmake -B build-${COMPILER} \
+      cmake \
+      -DCMAKE_Fortran_COMPILER=nvfortran \
+      -DFFTW_LIB=/opt/software/fftw/3/3.3.10-nvidia-openmpi/lib/libfftw3.so \
+      -DFFTW_THREADED_LIB=/opt/software/fftw/3/3.3.10-nvidia-openmpi/lib/libfftw3_omp.so \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_Fortran_FLAGS_RELEASE='-O3 -tp zen2 -Mcache_align -fma' \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 24 || exit
+cmake --install build-${COMPILER}
+
+cp -pr params ${INSTALL_PREFIX}/
+cp -pr example ${INSTALL_PREFIX}/
+cp -pr bench ${INSTALL_PREFIX}/
+cp -pr test ${INSTALL_PREFIX}/
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}
