@@ -1,0 +1,163 @@
+NAME="openmpi"
+INSTALL_NAME="openmpi"
+MAJOR_VERSION="4"
+MINOR_VERSION="1.5"
+
+INSTALL_LOCATION=/opt/software
+BUILD_DIR=~/build
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+
+INSTALL_LOCATION+=/${NAME}/${MAJOR_VERSION}/${VERSION}
+
+# Exports useful for compiling inside a container
+export LANG=C
+export LC_ALL=C
+
+
+# Clean up the build directory and unpack the source tarball
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${INSTALL_NAME}-${VERSION}.tar.bz2 2>&1 > /dev/null
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER='intel'
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/11/latest
+
+CC=icx \
+   CXX=icpx \
+   FC=ifx \
+   ./configure \
+   --prefix=${INSTALL_LOCATION}-${COMPILER} \
+   --with-pmix=internal \
+   --with-hwloc=internal \
+   --disable-silent-rules \
+   --enable-builtin-atomics \
+   --enable-mpi-cxx \
+   --enable-mpi1-compatibility \
+   --with-hwloc=internal \
+   --with-lustre=/usr \
+   --without-verbs
+
+make -j 24 install  || exit
+
+make distclean > /dev/null
+
+
+# NVIDIA HPC SDK
+COMPILER='nvidia'
+
+module purge
+module load nvidia
+module load nvhpc/latest
+
+CC=nvc \
+   CFLAGS="-fPIC" \
+   CXX=nvc++ \
+   CXXFLAGS="-fPIC" \
+   FC=nvfortran \
+   FCFLAGS="-fPIC" \
+   ./configure \
+   --prefix=${INSTALL_LOCATION}-${COMPILER} \
+   --with-pmix=internal \
+   --with-hwloc=internal \
+   --disable-silent-rules \
+   --enable-builtin-atomics \
+   --enable-mpi-cxx \
+   --enable-mpi1-compatibility \
+   --with-hwloc=internal \
+   --with-lustre=/usr \
+   --without-verbs
+
+make -j 24 install  || exit
+
+make distclean > /dev/null
+
+
+# AMD AOCC
+COMPILER='aocc'
+
+module purge
+module load amd/aocc/latest
+
+CC=clang \
+   CXX=clang++ \
+   FC=flang \
+   ./configure \
+   --prefix=${INSTALL_LOCATION}-${COMPILER} \
+   --with-pmix=internal \
+   --with-hwloc=internal \
+   --disable-silent-rules \
+   --enable-builtin-atomics \
+   --enable-mpi-cxx \
+   --enable-mpi1-compatibility \
+   --with-hwloc=internal \
+   --with-lustre=/usr \
+   --without-verbs
+
+make -j 24 install  || exit
+
+make distclean > /dev/null
+
+
+# LLVM Project
+COMPILER='llvm'
+
+module purge
+module load llvm/15/15.0.7-gcc
+
+CC=clang \
+   CXX=clang++ \
+   FC=flang \
+   ./configure \
+   --prefix=${INSTALL_LOCATION}-${COMPILER} \
+   --with-pmix=internal \
+   --with-hwloc=internal \
+   --disable-silent-rules \
+   --enable-builtin-atomics \
+   --enable-mpi-cxx \
+   --enable-mpi1-compatibility \
+   --with-hwloc=internal \
+   --with-lustre=/usr \
+   --without-verbs
+
+make -j 24 install  || exit
+
+make distclean > /dev/null
+
+
+# GNU GCC
+COMPILER='gcc'
+
+module purge
+module load gcc/11/latest
+
+CC=gcc \
+   CXX=g++ \
+   FC=gfortran \
+   ./configure \
+   --prefix=${INSTALL_LOCATION}-${COMPILER} \
+   --with-pmix=internal \
+   --with-hwloc=internal \
+   --disable-silent-rules \
+   --enable-builtin-atomics \
+   --enable-mpi-cxx \
+   --enable-mpi1-compatibility \
+   --with-hwloc=internal \
+   --with-lustre=/usr \
+   --without-verbs
+
+make -j 24 install  || exit
+
+make distclean > /dev/null
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
