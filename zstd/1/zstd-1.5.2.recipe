@@ -1,28 +1,77 @@
 NAME="zstd"
-INSTALL_NAME="zstd"
 MAJOR_VERSION="1"
 MINOR_VERSION="5.2"
+
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
+BUILD_DIR=~/build
 
 export LANG=C
 export LC_ALL=C
 
-cd ~/build
+cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
-tar xvf ${INSTALL_NAME}-${VERSION}.tar.gz
+tar xvf ${NAME}-${VERSION}.tar.gz
 cd ${NAME}-${VERSION}
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_CXX_COMPILER=icpx \
+      -DZSTD_BUILD_TESTS=OFF \
+      -DZSTD_ZLIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/1/1.2.13-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/1/1.2.13-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/5/5.2.8-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/5/5.2.8-${COMPILER}/lib64/liblzma.so \
+      -DZSTD_LZMA_SUPPORT=ON \
+      -DZSTD_LZ4_SUPPORT=ON \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/1/1.9.4-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
 
 # GNU GCC
 COMPILER="gcc"
 
 module purge
 module load gcc/12/latest
-module load lz4/1/latest-gcc
 
-CC=gcc CFLAGS ?='-O3'
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DZSTD_BUILD_TESTS=OFF \
+      -DZSTD_ZLIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/1/1.2.13-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/1/1.2.13-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/5/5.2.8-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/5/5.2.8-${COMPILER}/lib64/liblzma.so \
+      -DZSTD_LZMA_SUPPORT=ON \
+      -DZSTD_LZ4_SUPPORT=ON \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/1/1.9.4-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-make -j 24 install prefix=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER} VERBOSE=1
 
-cd ~/build
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean up
+cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
 
