@@ -38,5 +38,8 @@ cmake -S llvm \
 cmake --build build-${COMPILER} -j 24 || exit
 cmake --install build-${COMPILER} || exit
 
+cd ${INSTALL_PREFIX}/bin
+ln -s flang-new flang
+
 cd ${BUILD_DIR}
 rm -fr ${DIR_NAME}-${VERSION}
