@@ -1,0 +1,89 @@
+NAME="c-blosc2"
+MAJOR_VERSION="2"
+MINOR_VERSION="8.0"
+CMAKE_C_FLAGS="-mssse3"
+
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
+BUILD_DIR=~/build
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+
+# N/A
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest 
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load llvm/16/latest-gcc
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
