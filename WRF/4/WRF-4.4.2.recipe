@@ -2,51 +2,58 @@ NAME="wrf"
 INSTALL_NAME="WRF"
 MAJOR_VERSION="4"
 MINOR_VERSION="4.2"
-GIT_VERSION="4.4.2"
-
-VERSION_ACT=${MAJOR_VERSION}.${MINOR_VERSION}
-
-MINOR_VERSION="4"
+COMPILER="nvidia"
+MPI="openmpi"
+BUNDLE_PREFIX=/opt/software/bundles
+BUILD_DIR=~/build
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+GIT_VERSION=${VERSION}.git
+
+VERSION+="-${COMPILER}-${MPI}"
+
+BUNDLE_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
+
+PATCH_CONFIG=../WRF-${VERSION}.configure.wrf.basic.patch
 
 export LANG=C
 export LC_ALL=C
 
-cd ~/build
-rm -fr ${INSTALL_NAME}
-git clone --branch release-v${GIT_VERSION} https://github.com/wrf-model/WRF.git
-cd ${INSTALL_NAME}
-
-# NVIDIA HPC SDK
-
-COMPILER="nvidia-openmpi"
+cd ${BUILD_DIR}
+rm -fr ${INSTALL_NAME}-${GIT_VERSION}
+tar xvf ${INSTALL_NAME}-${GIT_VERSION}.tar.gz || exit
+#git clone --branch release-v${GIT_VERSION} https://github.com/wrf-model/WRF.git
+cd ${INSTALL_NAME}-${GIT_VERSION}
 
 module purge
-module load nvidia
-module load openmpi/4/nvidia/latest
+module load ${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
 
-export PATH=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia/bin:$PATH
-export NETCDF=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
-export HDF5=/opt/software/bundles/wrf/4-hdf5-netcdf-nvidia
+export PATH=${BUNDLE_PREFIX}/bin:$PATH
+export NETCDF=${BUNDLE_PREFIX}
+export HDF5=${BUNDLE_PREFIX}
 
 printf "55\n1\n" | ./configure
 
-patch -p0 < ../WRF-${GIT_VERSION}.configure.wrf.basic.patch
+patch -p0 < ${PATCH_CONFIG}
 
-./compile -j 4 em_real
+./compile -j 4 em_real || exit
 
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION_ACT}-${COMPILER}
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
 
 mkdir -p ${INSTALL_PREFIX}/main
+mkdir -p ${INSTALL_PREFIX}/phys/noahmp/parameters
 
 cd ${INSTALL_PREFIX}
 
 ln -s main bin
 
-cp ~/build/${INSTALL_NAME}/main/*.exe ${INSTALL_PREFIX}/main/
+cp ${BUILD_DIR}/${INSTALL_NAME}-${GIT_VERSION}/main/*.exe ${INSTALL_PREFIX}/main/
 
-cp -r --preserve=links ~/build/${INSTALL_NAME}/run ${INSTALL_PREFIX}/
+cp -r --preserve=links ${BUILD_DIR}/${INSTALL_NAME}-${GIT_VERSION}/run ${INSTALL_PREFIX}/
+cp -r --preserve=links ${BUILD_DIR}/${INSTALL_NAME}-${GIT_VERSION}/phys/noahmp/parameters/* ${INSTALL_PREFIX}/phys/noahmp/parameters/
 
-cd ~/build
-rm -fr ${INSTALL_NAME}
+cd ${BUILD_DIR}
+rm -fr ${INSTALL_NAME}-${GIT_VERSION}
+
