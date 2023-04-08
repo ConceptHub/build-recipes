@@ -6,16 +6,16 @@ BUILD_DIR=~/build
 
 
 VERSION=${WRF_MAJOR_VERSION}.${WRF_MINOR_VERSION}
-INSTALL_PREFIX+="/${WRF_NAME}/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
 
-rm -fr ${INSTALL_PREFIX}
-
 # NVIDIA HPC SDK / Open MPI
 COMPILER="nvidia"
 MPI="openmpi"
+
+INSTALL_PREFIX+="/${WRF_NAME}/${VERSION}-${COMPILER}-${MPI}"
+rm -fr ${INSTALL_PREFIX}
 
 module purge
 module load cmake/latest
