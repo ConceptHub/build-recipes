@@ -14,7 +14,7 @@ export LC_ALL=C
 COMPILER="nvidia"
 MPI="openmpi"
 
-INSTALL_PREFIX+="/${WRF_NAME}/${VERSION}-${COMPILER}-${MPI}"
+INSTALL_PREFIX+="/${WRF_NAME}/${WRF_MAJOR_VERSION}/${VERSION}-${COMPILER}-${MPI}"
 rm -fr ${INSTALL_PREFIX}
 
 module purge
@@ -136,6 +136,7 @@ cmake --install build-${COMPILER} || exit
 cd ${INSTALL_PREFIX}/lib
 ln -s libhdf5_hl.so libhdf5_hl-shared.so
 ln -s libhdf5.so libhdf5-shared.so
+ln -s libhdf5_hl_fortran.so libhdf5hl_fortran.so
 
 cd ${BUILD_DIR}
 rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
@@ -157,6 +158,8 @@ cmake -B build-${COMPILER} \
       -DCMAKE_CXX_COMPILER=mpicxx \
       -DCMAKE_VERBOSE_MAKEFILE=OFF \
       -DBUILD_TESTING=OFF \
+      -DUSE_NETCDF4=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
       -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
       -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
       -DCURL_LIBRARIES=/opt/software/curl/7/7.86.0-nvidia/lib64/libcurl.so \
@@ -188,6 +191,7 @@ cmake -B build-${COMPILER} \
       -DCMAKE_Fortran_COMPILER=mpifort \
       -DCMAKE_VERBOSE_MAKEFILE=OFF \
       -DBUILD_TESTING=OFF \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
       -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
       -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
       -DCMAKE_BUILD_TYPE=Release \
@@ -199,4 +203,3 @@ cmake --install build-${COMPILER} || exit
 
 cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
-
