@@ -1,0 +1,202 @@
+WRF_NAME="wrf"
+WRF_MAJOR_VERSION="4"
+WRF_MINOR_VERSION="4.2"
+INSTALL_PREFIX=/opt/software/bundles
+BUILD_DIR=~/build
+
+
+VERSION=${WRF_MAJOR_VERSION}.${WRF_MINOR_VERSION}
+INSTALL_PREFIX+="/${WRF_NAME}/${VERSION}"
+
+export LANG=C
+export LC_ALL=C
+
+rm -fr ${INSTALL_PREFIX}
+
+# NVIDIA HPC SDK / Open MPI
+COMPILER="nvidia"
+MPI="openmpi"
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
+module load ${MPI}/4/${COMPILER}/latest
+module load curl/7/latest-${COMPILER}
+
+internal_COMPILER_C_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS} -I${INSTALL_PREFIX}/include/"
+internal_COMPILER_CXX_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CXXFLAGS} -I${INSTALL_PREFIX}/include/"
+internal_COMPILER_Fortran_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${FCFLAGS} -I${INSTALL_PREFIX}/include/"
+LDFLAGS+=" -L${INSTALL_PREFIX}/lib -L${INSTALL_PREFIX}/lib64"
+
+
+NAME="zlib"
+INSTALL_NAME="zlib"
+MAJOR_VERSION="1"
+MINOR_VERSION="2.13"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+mkdir -p ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+NAME="libaec"
+INSTALL_NAME="libaec"
+MAJOR_VERSION="1"
+MINOR_VERSION="0.6"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+mkdir -p ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${BUILD_DIR}/${NAME}-${VERSION}
+
+
+NAME="hdf"
+EPOCH=5
+MAJOR_VERSION="1"
+MINOR_VERSION_0="14"
+MINOR_VERSION_1="0"
+
+ZLIB_MODULE_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.13"
+
+LIBAEC_MODULE_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION_0}.${MINOR_VERSION_1}
+TAR_VERSION_STRING=${MAJOR_VERSION}_${MINOR_VERSION_0}_${MINOR_VERSION_1}
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+tar xvf ${NAME}${EPOCH}-${TAR_VERSION_STRING}.tar.gz || exit
+cd ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=${INSTALL_PREFIX}/lib64/libsz.a \
+      -Dlibaec_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DZLIB_LIBRARY_RELEASE=${INSTALL_PREFIX}/lib/libz.a \
+      -DSZIP_LIBRARY=${INSTALL_PREFIX}/lib64/libsz.a \
+      -DSZIP_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${INSTALL_PREFIX}/lib
+ln -s libhdf5_hl.so libhdf5_hl-shared.so
+ln -s libhdf5.so libhdf5-shared.so
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}${EPOCH}-${NAME}${EPOCH}-${TAR_VERSION_STRING}
+
+
+NAME="netcdf-c"
+MAJOR_VERSION="4"
+MINOR_VERSION="9.0"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCURL_LIBRARIES=/opt/software/curl/7/7.86.0-nvidia/lib64/libcurl.so \
+      -DZLIB_INCLUDE_DIR:PATH=${INSTALL_PREFIX}/include \
+      -DZLIB_LIBRARY:FILEPATH=${INSTALL_PREFIX}/lib/libz.so \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
+
+NAME="netcdf-fortran"
+MAJOR_VERSION="4"
+MINOR_VERSION="6.0"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
