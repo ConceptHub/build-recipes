@@ -1,0 +1,296 @@
+#!/bin/bash
+
+wget https://sourceforge.net/projects/bzip2/files/latest/download -O bzip2-1.0.6.tar.gz
+wget https://zlib.net/zlib-1.2.13.tar.gz
+wget https://gitlab.dkrz.de/k202009/libaec/uploads/45b10e42123edd26ab7b3ad92bcf7be2/libaec-1.0.6.tar.gz
+wget https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_0.tar.gz
+wget https://downloads.unidata.ucar.edu/netcdf-c/4.9.0/netcdf-c-4.9.0.tar.gz
+wget https://downloads.unidata.ucar.edu/netcdf-fortran/4.6.0/netcdf-fortran-4.6.0.tar.gz
+git clone --branch release-v4.4.2 https://github.com/wrf-model/WRF.git
+mv WRF WRF-4.4.2.git
+tar -zcf WRF-4.4.2.git.tar.gz WRF-4.4.2.git
+rm -fr WRF-4.4.2.git
+
+
+WRF_NAME="wrf"
+WRF_INSTALL_NAME="WRF"
+WRF_MAJOR_VERSION="4"
+WRF_MINOR_VERSION="4.2"
+INSTALL_ROOT=/home/`whoami`/disco-installs
+BUILD_DIR=`pwd`
+
+WRF_VERSION=${WRF_MAJOR_VERSION}.${WRF_MINOR_VERSION}
+
+umask 0022
+
+export LANG=C
+export LC_ALL=C
+
+# NVIDIA HPC SDK / Open MPI
+COMPILER="nvidia"
+MPI="openmpi"
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${WRF_NAME}/${WRF_MAJOR_VERSION}/${WRF_VERSION}-${COMPILER}-${MPI}/bundle
+
+rm -fr ${INSTALL_PREFIX}
+
+module purge
+module load cmake/latest
+module load nvidia
+module load nvhpc-nompi/latest
+module load ${MPI}/4/${COMPILER}/latest
+module load curl/7/latest-${COMPILER}
+
+internal_COMPILER_C_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CFLAGS} -I${INSTALL_PREFIX}/include/"
+internal_COMPILER_CXX_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${CXXFLAGS} -I${INSTALL_PREFIX}/include/"
+internal_COMPILER_Fortran_FLAGS="-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC ${FCFLAGS} -I${INSTALL_PREFIX}/include/"
+LDFLAGS+=" -L${INSTALL_PREFIX}/lib -L${INSTALL_PREFIX}/lib64"
+
+
+BZIP2_NAME="bzip2"
+BZIP2_MAJOR_VERSION="1"
+BZIP2_MINOR_VERSION="0.6"
+
+BZIP2_VERSION=${BZIP2_MAJOR_VERSION}.${BZIP2_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${BZIP2_NAME}-${BZIP2_VERSION}
+tar xvf ${BZIP2_NAME}-${BZIP2_VERSION}.tar.gz || exit
+cd ${BZIP2_NAME}-${BZIP2_VERSION}
+
+sed -i 's/^CC=.*/CC=nvc/' Makefile-libbz2_so
+sed -i 's/^CC=.*/CC=nvc/' Makefile
+sed -i 's/^CFLAGS=.*/CFLAGS=-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC -Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64/' Makefile-libbz2_so
+sed -i 's/^CFLAGS=.*/CFLAGS=-tp=zen2 -Mcache_align -fast -Mvect -mavx2 -fPIC -Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64/' Makefile
+
+make || exit
+make -f Makefile-libbz2_so || exit
+make install PREFIX=${INSTALL_PREFIX} || exit
+cp -r --preserve=links libbz2.so.* ${INSTALL_PREFIX}/lib
+
+cd ${BUILD_DIR}
+rm -fr ${BZIP2_NAME}-${BZIP2_VERSION}
+
+
+ZLIB_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.13"
+
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${ZLIB_NAME}-${ZLIB_VERSION}
+tar xvf ${ZLIB_NAME}-${ZLIB_VERSION}.tar.gz || exit
+cd ${ZLIB_NAME}-${ZLIB_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${ZLIB_NAME}-${ZLIB_VERSION}
+
+
+LIBAEC_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${LIBAEC_NAME}-${LIBAEC_VERSION}
+tar xvf ${LIBAEC_NAME}-${LIBAEC_VERSION}.tar.gz || exit
+cd ${LIBAEC_NAME}-${LIBAEC_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${LIBAEC_NAME}-${LIBAEC_VERSION}
+
+
+HDF_NAME="hdf"
+HDF_EPOCH=5
+HDF_MAJOR_VERSION="1"
+HDF_MINOR_VERSION_0="14"
+HDF_MINOR_VERSION_1="0"
+
+ZLIB_MODULE_NAME="zlib"
+ZLIB_MAJOR_VERSION="1"
+ZLIB_MINOR_VERSION="2.13"
+
+LIBAEC_MODULE_NAME="libaec"
+LIBAEC_MAJOR_VERSION="1"
+LIBAEC_MINOR_VERSION="0.6"
+
+HDF_VERSION=${HDF_MAJOR_VERSION}.${HDF_MINOR_VERSION_0}.${HDF_MINOR_VERSION_1}
+TAR_VERSION_STRING=${HDF_MAJOR_VERSION}_${HDF_MINOR_VERSION_0}_${HDF_MINOR_VERSION_1}
+ZLIB_VERSION=${ZLIB_MAJOR_VERSION}.${ZLIB_MINOR_VERSION}
+LIBAEC_VERSION=${LIBAEC_MAJOR_VERSION}.${LIBAEC_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${TAR_VERSION_STRING}
+tar xvf ${HDF_NAME}${HDF_EPOCH}-${TAR_VERSION_STRING}.tar.gz || exit
+cd ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${TAR_VERSION_STRING}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DHDF5_ENABLE_PARALLEL=ON \
+      -DLARGE_PARALLEL_IO=ON \
+      -DHDF5_BUILD_FORTRAN=ON \
+      -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+      -DHDF5_ENABLE_SZIP_ENCODING=ON \
+      -DUSE_LIBAEC=ON \
+      -Dlibaec_LIBRARY=${INSTALL_PREFIX}/lib64/libsz.a \
+      -Dlibaec_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DHDF5_ENABLE_Z_LIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DZLIB_LIBRARY_RELEASE=${INSTALL_PREFIX}/lib/libz.a \
+      -DSZIP_LIBRARY=${INSTALL_PREFIX}/lib64/libsz.a \
+      -DSZIP_INCLUDE_DIR=${INSTALL_PREFIX}/include \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${INSTALL_PREFIX}/lib
+ln -s libhdf5_hl.so libhdf5_hl-shared.so
+ln -s libhdf5.so libhdf5-shared.so
+ln -s libhdf5_hl_fortran.so libhdf5hl_fortran.so
+
+cd ${BUILD_DIR}
+rm -fr ${HDF_NAME}${HDF_EPOCH}-${HDF_NAME}${HDF_EPOCH}-${TAR_VERSION_STRING}
+
+
+NETCDF_C_NAME="netcdf-c"
+NETCDF_C_MAJOR_VERSION="4"
+NETCDF_C_MINOR_VERSION="9.0"
+
+NETCDF_C_VERSION=${NETCDF_C_MAJOR_VERSION}.${NETCDF_C_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NETCDF_C_NAME}-${NETCDF_C_VERSION}
+tar xvf ${NETCDF_C_NAME}-${NETCDF_C_VERSION}.tar.gz || exit
+cd ${NETCDF_C_NAME}-${NETCDF_C_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DUSE_NETCDF4=ON \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_CXX_FLAGS="${internal_COMPILER_CXX_FLAGS}" \
+      -DCURL_LIBRARIES=/opt/software/curl/7/7.86.0-nvidia/lib64/libcurl.so \
+      -DZLIB_INCLUDE_DIR:PATH=${INSTALL_PREFIX}/include \
+      -DZLIB_LIBRARY:FILEPATH=${INSTALL_PREFIX}/lib/libz.so \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${NETCDF_C_NAME}-${NETCDF_C_VERSION}
+
+
+NETCDF_FORTRAN_NAME="netcdf-fortran"
+NETCDF_FORTRAN_MAJOR_VERSION="4"
+NETCDF_FORTRAN_MINOR_VERSION="6.0"
+
+NETCDF_FORTRAN_VERSION=${NETCDF_FORTRAN_MAJOR_VERSION}.${NETCDF_FORTRAN_MINOR_VERSION}
+
+cd ${BUILD_DIR}
+rm -fr ${NETCDF_FORTRAN_NAME}-${NETCDF_FORTRAN_VERSION}
+tar xvf ${NETCDF_FORTRAN_NAME}-${NETCDF_FORTRAN_VERSION}.tar.gz || exit
+cd ${NETCDF_FORTRAN_NAME}-${NETCDF_FORTRAN_VERSION}
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_VERBOSE_MAKEFILE=OFF \
+      -DBUILD_TESTING=OFF \
+      -DCMAKE_INSTALL_LIBDIR="lib" \
+      -DCMAKE_C_FLAGS="${internal_COMPILER_C_FLAGS}" \
+      -DCMAKE_Fortran_FLAGS="${internal_COMPILER_Fortran_FLAGS}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+
+cmake --build build-${COMPILER} -j 12 || exit
+cmake --install build-${COMPILER} || exit
+
+cd ${BUILD_DIR}
+rm -fr ${NETCDF_FORTRAN_NAME}-${NETCDF_FORTRAN_VERSION}
+
+INSTALL_PREFIX=${INSTALL_ROOT}/${WRF_NAME}/${WRF_MAJOR_VERSION}/${WRF_VERSION}-${COMPILER}-${MPI}/wrf
+
+BUNDLE_DIR=${INSTALL_ROOT}/${WRF_NAME}/${WRF_MAJOR_VERSION}/${WRF_VERSION}-${COMPILER}-${MPI}/bundle
+
+GIT_VERSION=${WRF_VERSION}.git
+
+WRF_VERSION+="-${COMPILER}-${MPI}"
+
+BUNDLE_PREFIX+="/${NAME}/${WRF_MAJOR_VERSION}/${WRF_VERSION}"
+
+umask 0022
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${WRF_INSTALL_NAME}-${GIT_VERSION}
+tar xvf ${WRF_INSTALL_NAME}-${GIT_VERSION}.tar.gz || exit
+#git clone --branch release-v${GIT_VERSION} https://github.com/wrf-model/WRF.git
+cd ${WRF_INSTALL_NAME}-${GIT_VERSION}
+
+module purge
+module load ${COMPILER}
+module load ${MPI}/4/${COMPILER}/latest
+
+export PATH=${BUNDLE_DIR}/bin:${PATH}
+export NETCDF=${BUNDLE_DIR}
+export HDF5=${BUNDLE_DIR}
+export LD_LIBRARY_PATH=${BUNDLE_DIR}/lib:${BUNDLE_DIR}/lib64:${LD_LIBRARY_PATH}
+
+printf "55\n1\n" | ./configure
+
+sed -i 's/^FC              =       time $(DM_FC)/FC              =       $(DM_FC)/' configure.wrf
+sed -i 's/^CFLAGS_LOCAL    =       -w -O3 -DRPC_TYPES=2 # -DRSL0_ONLY/CFLAGS_LOCAL    =       -w -O3 -tp zen2 -Mcache_align -DRPC_TYPES=2/g' configure.wrf
+sed -i 's/FCOPTIM         =       -O3 #-fastsse -Mvect=noaltcode -Msmartalloc -Mprefetch=distance:8 -Mfprelaxed # -Minfo=all =Mneginfo=all/FCOPTIM         =       -O3 -tp zen2 -Mcache_align/g' configure.wrf
+
+./compile -j 4 em_real || exit
+
+mkdir -p ${INSTALL_PREFIX}/main
+mkdir -p ${INSTALL_PREFIX}/phys/noahmp/parameters
+
+cd ${INSTALL_PREFIX}
+
+ln -s main bin
+
+cp ${BUILD_DIR}/${WRF_INSTALL_NAME}-${GIT_VERSION}/main/*.exe ${INSTALL_PREFIX}/main/
+
+cp -r --preserve=links ${BUILD_DIR}/${WRF_INSTALL_NAME}-${GIT_VERSION}/run ${INSTALL_PREFIX}/
+cp -r --preserve=links ${BUILD_DIR}/${WRF_INSTALL_NAME}-${GIT_VERSION}/phys/noahmp/parameters/* ${INSTALL_PREFIX}/phys/noahmp/parameters/
+
+cd ${BUILD_DIR}
+rm -fr ${WRF_INSTALL_NAME}-${GIT_VERSION}
