@@ -294,3 +294,17 @@ cp -r --preserve=links ${BUILD_DIR}/${WRF_INSTALL_NAME}-${GIT_VERSION}/phys/noah
 
 cd ${BUILD_DIR}
 rm -fr ${WRF_INSTALL_NAME}-${GIT_VERSION}
+
+# Create environment module
+
+[ ! -d ${MODULEFILES_DIR} ] && mkdir -p ${MODULEFILES_DIR}
+
+echo "#%Module 1.0" > ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+
+printf "\nmodule load openmpi/4/nvidia/4.1.4" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+printf "\nmodule load gcc/12/latest" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+printf "\n\nset prefix /opt/software/wrf/4/4.4.2-nvidia-openmpi" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+printf "\n\nprepend-path PATH            \$prefix/bin" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+printf "\nprepend-path LD_LIBRARY_PATH \""${BUNDLE_DIR}/lib"\"" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+printf "\nprepend-path LD_LIBRARY_PATH \""${BUNDLE_DIR}/lib64"\"" >> ${MODULEFILES_DIR}/${WRF_VERSION}-${COMPILER}-${MPI}
+
