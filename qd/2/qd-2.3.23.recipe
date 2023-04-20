@@ -1,0 +1,156 @@
+NAME="qd"
+MAJOR_VERSION="2"
+MINOR_VERSION="3.23"
+BUILD_ROOT=~/build
+INSTALL_PREFIX=/opt/software
+NUM_COMP_PROC=24
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX+='/${NAME}/${MAJOR_VERSION}/${VERSION}'
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz || exit
+cd ${NAME}-${VERSION}
+
+
+# LLVM
+# NO LLVM BUILD - missing (at least) etime intrinsic function
+
+
+# Intel oneAPI
+COMPILER="intel-llvm"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/12/latest
+
+C_FLAGS="-march=core-avx2 -mfma -mtune=native -fp-model precise -fPIC"
+F_FLAGS="-march=core-avx2 -mfma -mtune=native -fp-model precise -fPIC"
+CXX_FLAGS="-march=core-avx2 -mfma -mtune=native -fp-model precise -fPIC"
+
+CC=icx
+CXX=icpx
+FC=ifx
+
+./configure \
+   CC=${CC} \
+   CXX=${CXX} \
+   FC=${FC} \
+   CFLAGS="${C_FLAGS} ${CFLAGS}" \
+   FCFLAGS="${F_FLAGS} ${FCFLAGS}" \
+   CXXFLAGS="${CXX_FLAGS} ${CXXFLAGS}" \
+   --prefix=${INSTALL_PREFIX}-${COMPILER}
+
+make -j ${NUM_COMP_PROC} install || exit
+make distclean
+
+
+COMPILER="intel-classic"
+
+CC=icc
+CXX=icpc
+FC=ifort
+
+./configure \
+   CC=${CC} \
+   CXX=${CXX} \
+   FC=${FC} \
+   CFLAGS="${C_FLAGS} ${CFLAGS}" \
+   FCFLAGS="${F_FLAGS} ${FCFLAGS}" \
+   CXXFLAGS="${CXX_FLAGS} ${CXXFLAGS}" \
+   --prefix=${INSTALL_PREFIX}-${COMPILER}
+
+make -j ${NUM_COMP_PROC} install || exit
+make distclean
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+CC=nvc
+CXX=nvc++
+FC=nvfortran
+
+C_FLAGS="-Mcache_align -Mvect -tp=zen2 -fPIC"
+F_FLAGS="-Mcache_align -Mvect -tp=zen2 -fPIC"
+CXX_FLAGS="-Mcache_align -Mvect -tp=zen2 -fPIC"
+
+./configure \
+   CC=${CC} \
+   CXX=${CXX} \
+   FC=${FC} \
+   CFLAGS="${C_FLAGS} ${CFLAGS}" \
+   FCFLAGS="${F_FLAGS} ${FCFLAGS}" \
+   CXXFLAGS="${CXX_FLAGS} ${CXXFLAGS}" \
+   --prefix=${INSTALL_PREFIX}-${COMPILER}
+
+make -j ${NUM_COMP_PROC} install || exit
+make distclean
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest
+
+CC=clang
+CXX=clang++
+FC=flang
+
+C_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+F_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+CXX_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+
+./configure \
+   CC=${CC} \
+   CXX=${CXX} \
+   FC=${FC} \
+   CFLAGS="${C_FLAGS} ${CFLAGS}" \
+   FCFLAGS="${F_FLAGS} ${FCFLAGS}" \
+   CXXFLAGS="${CXX_FLAGS} ${CXXFLAGS}" \
+   --prefix=${INSTALL_PREFIX}-${COMPILER}
+
+make -j ${NUM_COMP_PROC} install || exit
+make distclean
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/12/latest
+
+CC=gcc
+CXX=g++
+FC=gfortran
+
+C_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+F_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+CXX_FLAGS="-march=znver2 -mfma -mtune=native -fPIC"
+
+./configure \
+   CC=${CC} \
+   CXX=${CXX} \
+   FC=${FC} \
+   CFLAGS="${C_FLAGS} ${CFLAGS}" \
+   FCFLAGS="${F_FLAGS} ${FCFLAGS}" \
+   CXXFLAGS="${CXX_FLAGS} ${CXXFLAGS}" \
+   --prefix=${INSTALL_PREFIX}-${COMPILER}
+
+make -j ${NUM_COMP_PROC} install || exit
+make distclean
+
+
+# Clean
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
