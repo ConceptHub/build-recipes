@@ -2,10 +2,13 @@ NAME="mpich"
 INSTALL_NAME="mpich"
 MAJOR_VERSION="4"
 MINOR_VERSION="0.2"
-
 BUILD_DIR=~/build
+INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}
+NUM_PAR_COMP=24
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+INSTALL_PREFIX+="/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
@@ -18,9 +21,10 @@ cd ${NAME}-${VERSION}
 
 # Intel oneAPI
 COMPILER="intel"
-
+COMPILER_STREAM="llvm"
 
 module purge
+module load intel.universe # Get Python from here
 module load intel
 module load compiler/latest
 module load gcc/11/latest
@@ -28,12 +32,58 @@ module load gcc/11/latest
 unset F90
 unset F90FLAGS
 
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+CC=icx \
+    CXX=icx \
+    FC=ifx \
+    F77=ifx \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER}-${COMPILER_STREAM} \
+       --enable-fortran=all \
+       --enable-cxx --with-device=ch4:ucx \
+       --enable-romio \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
 
-CC=icc CXX=icpc FC=ifort F77=ifort FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr --with-hwloc=embedded
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
 
-make -j 48 install || exit
 
+# Intel oneAPI
+COMPILER="intel"
+COMPILER_STREAM="classic"
+
+module purge
+module load intel.universe # Get Python from here
+module load intel
+module load compiler/latest
+module load gcc/11/latest
+
+unset F90
+unset F90FLAGS
+
+CC=icx \
+    CXX=icc \
+    FC=ifort \
+    F77=ifort \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER}-${COMPILER_STREAM} \
+       --enable-fortran=all \
+       --enable-cxx --with-device=ch4:ucx \
+       --enable-romio \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
+
+make -j ${NUM_PAR_COMP} install || exit
 make distclean
 
 
@@ -47,12 +97,24 @@ module load nvhpc-nompi/latest
 unset F90
 unset F90FLAGS
 
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+CC=nvc \
+    CXX=nvc++ \
+    FC=nvfortran \
+    F77=nvfortran \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER} \
+       --enable-fortran=all \
+       --enable-cxx --with-device=ch4:ucx \
+       --enable-romio \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
 
-CC=nvc CXX=nvc++ FC=nvfortran F77=nvfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr --with-hwloc=embedded
-
-make -j 48 install || exit
-
+make -j ${NUM_PAR_COMP} install || exit
 make distclean
 
 
@@ -65,12 +127,56 @@ module load amd/aocc/3/3.2.0
 unset F90
 unset F90FLAGS
 
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+CC=clang \
+    CXX=clang++ \
+    FC=flang \
+    F77=flang \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER} \
+       --enable-fortran=all \
+       --enable-cxx \
+       --enable-romio \
+       --with-device=ch4:ucx \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
 
-CC=clang CXX=clang++ FC=flang FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr --with-hwloc=embedded
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
 
-make -j 48 install || exit
 
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load llvm/16/latest-gcc
+
+unset F90
+unset F90FLAGS
+
+CC=clang \
+    CXX=clang++ \
+    FC=flang \
+    F77=flang \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER} \
+       --enable-fortran=all \
+       --enable-cxx \
+       --enable-romio \
+       --with-device=ch4:ucx \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
+
+make -j ${NUM_PAR_COMP} install || exit
 make distclean
 
 
@@ -83,14 +189,27 @@ module load amd/gcc/12/latest
 unset F90
 unset F90FLAGS
 
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${COMPILER}/$VERSION
+CC=gcc \
+    CXX=g++ \
+    FC=gfortran \
+    F77=gfortran \
+    FFLAGS="-fPIC ${FFLAGS}" \
+    FCFLAGS="-fPIC ${FCLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CXXFLAGS="-fPIC ${CFLAGS}" \
+    ./configure \
+       --prefix=${INSTALL_PREFIX}/${COMPILER} \
+       --enable-fortran=all \
+       --enable-cxx --with-device=ch4:ucx \
+       --enable-romio \
+       --with-slurm=/usr \
+       --with-ucx=/usr \
+       --with-hwloc=embedded
 
-CC=gcc CXX=g++ FC=gfortran F77=gfortran FFLAGS="-fPIC" FCFLAGS="-fPIC" CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --prefix=${INSTALL_PREFIX} --enable-fortran=all --enable-cxx --with-device=ch4:ucx --with-slurm=/usr --with-ucx=/usr --with-hwloc=embedded
-
-make -j 48 install || exit
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
 
 
 # Clean up
 cd ${BUILD_DIR}
 rm -fr ${NAME}-${VERSION}
-
