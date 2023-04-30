@@ -1,0 +1,39 @@
+NAME="cmake"
+VERSION_MAJOR="3"
+VERSION_MINOR="26.3"
+BUILD_DIR=~/build
+INSTALL_PREFIX=/opt/software
+NUM_PAR_COMP="24"
+
+
+VERSION=${VERSION_MAJOR}.${VERSION_MINOR}
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load llvm/16/latest-gcc
+module load cmake/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER="clang" \
+      -DCMAKE_CXX_COMPILER="clang++" \
+      -DCMAKE_Fortran_COMPILER="flang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}/${NAME}/${VERSION_MAJOR}/${VERSION}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER}
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
