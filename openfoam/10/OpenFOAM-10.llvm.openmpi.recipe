@@ -3,6 +3,7 @@ VERSION="10"
 INSTALL_ROOT=/opt/software
 MPI_TYPE="openmpi"
 MPI_VERSION="4"
+NUM_PAR_PROC="24"
 
 rm -fr ${INSTALL_ROOT}/${NAME}/${VERSION}/llvm-${MPI_TYPE}
 mkdir -p ${INSTALL_ROOT}/${NAME}/${VERSION}/llvm-${MPI_TYPE} || exit
@@ -30,8 +31,8 @@ export WM_CXX=clang++
 export WM_CC=clang
 
 cd ThirdParty-${VERSION}
-./Allwmake -j 24
+./Allwmake -j ${NUM_PAR_PROC}
 
 cd ../${NAME}-${VERSION}
-./Allwmake -j 24
+./Allwmake -j ${NUM_PAR_PROC}
 
