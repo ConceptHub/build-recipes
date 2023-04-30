@@ -1,0 +1,28 @@
+NAME="OpenFOAM"
+VERSION="10"
+INSTALL_ROOT=/opt/software
+MPI_TYPE="openmpi"
+MPI_VERSION="4"
+
+rm -fr ${INSTALL_ROOT}/${NAME}/${VERSION}/gcc-${MPI_TYPE}
+mkdir -p ${INSTALL_ROOT}/${NAME}/${VERSION}/gcc-${MPI_TYPE} || exit
+cd ${INSTALL_ROOT}/${NAME}/${VERSION}/gcc-${MPI_TYPE}
+
+wget -O - http://dl.openfoam.org/source/${VERSION} | tar xvz
+wget -O - http://dl.openfoam.org/third-party/${VERSION} | tar xvz
+
+mv ${NAME}-${VERSION}-version-${VERSION} ${NAME}-${VERSION}
+mv ThirdParty-${VERSION}-version-${VERSION} ThirdParty-${VERSION}
+
+source ${NAME}-${VERSION}/etc/bashrc
+
+module purge
+module load ${MPI_TYPE}/${MPI_VERSION}/gcc/latest
+module load gcc/12/latest
+
+cd ThirdParty-${VERSION}
+./Allwmake -j 24
+
+cd ../${NAME}-${VERSION}
+./Allwmake -j 24
+
