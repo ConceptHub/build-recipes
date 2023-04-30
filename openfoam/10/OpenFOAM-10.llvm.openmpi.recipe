@@ -1,0 +1,37 @@
+NAME="OpenFOAM"
+VERSION="10"
+INSTALL_ROOT=/opt/software
+MPI_TYPE="openmpi"
+MPI_VERSION="4"
+
+rm -fr ${INSTALL_ROOT}/${NAME}/${VERSION}/llvm-${MPI_TYPE}
+mkdir -p ${INSTALL_ROOT}/${NAME}/${VERSION}/llvm-${MPI_TYPE} || exit
+cd ${INSTALL_ROOT}/${NAME}/${VERSION}/llvm-${MPI_TYPE}
+
+wget -O - http://dl.openfoam.org/source/${VERSION} | tar xvz
+wget -O - http://dl.openfoam.org/third-party/${VERSION} | tar xvz
+
+mv ${NAME}-${VERSION}-version-${VERSION} ${NAME}-${VERSION}
+mv ThirdParty-${VERSION}-version-${VERSION} ThirdParty-${VERSION}
+
+sed -i 's/WM_COMPILER=Gcc/WM_COMPILER=Clang/g' ${NAME}-${VERSION}/etc/bashrc
+
+sed -i 's/clang_version=llvm-3.7.0/clang_version=llvm-16.0.1/g' ${NAME}-${VERSION}/etc/config.sh/compiler
+
+source ${NAME}-${VERSION}/etc/bashrc
+
+module purge
+module load ${MPI_TYPE}/${MPI_VERSION}/llvm/latest-llvm
+module load llvm/16/latest-gcc
+
+export CC=clang
+export CXX=clang++
+export WM_CXX=clang++
+export WM_CC=clang
+
+cd ThirdParty-${VERSION}
+./Allwmake -j 24
+
+cd ../${NAME}-${VERSION}
+./Allwmake -j 24
+
