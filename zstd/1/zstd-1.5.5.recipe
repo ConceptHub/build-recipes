@@ -41,9 +41,12 @@ cmake -S build/cmake \
       -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-
 cmake --build build-${COMPILER} -j 12 || exit
 cmake --install build-${COMPILER} || exit
+
+cd ${INSTALL_PREFIX}-${COMPILER}
+ln -s lib64 lib
+cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
 # GNU GCC
@@ -68,9 +71,12 @@ cmake -S build/cmake \
       -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-
 cmake --build build-${COMPILER} -j 12 || exit
 cmake --install build-${COMPILER} || exit
+
+cd ${INSTALL_PREFIX}-${COMPILER}
+ln -s lib64 lib
+cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
 # Clean up
