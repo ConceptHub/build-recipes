@@ -28,7 +28,7 @@ module load compiler/latest
 module load gcc/13/latest
 
 cmake -B build-${COMPILER} \
-      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_FLAGS="-static-intel -msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
       -DCMAKE_C_COMPILER="icx" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
