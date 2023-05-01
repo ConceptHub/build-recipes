@@ -1,0 +1,99 @@
+NAME="lua"
+MAJOR_VERSION="5"
+MINOR_VERSION="4.5"
+INSTALL_PREFIX=/opt/software
+BUILD_DIR=~/build
+NUM_PAR_COMP=24
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+patch -p0 < ../lua-5.4.5.src.Makefile.patch
+
+internal_CFLAGS="-O3 -Wall -Wextra -march=core-avx2 -mfma -DLUA_COMPAT_5_3 -DLUA_USE_LINUX ${CFLAGS}"
+
+
+# Intel oneAPI
+COMPILER='intel'
+
+module purge
+module load intel
+module load compiler/latest
+
+CFLAGS=${internal_CFLAGS} make \
+   CC=icx \
+   CXX=icpx \
+   -j ${NUM_PAR_COMP} || exit
+
+make install || exit
+make clean
+
+
+# AMD AOCC
+COMPILER='aocc'
+
+module purge
+module load amd/aocc/latest
+
+# NOTE: AOCC can detect the CFLAGS internally. No need to pass CFLAGS
+# to the compiler here:
+make \
+   CC=clang \
+   CXX=clang++ \
+   -j ${NUM_PAR_COMP} || exit
+
+export INSTALL_TOP=${INSTALL_PREFIX}-${COMPILER}
+
+make install || exit
+make clean
+
+
+# NVIDIA HPC SDK - CODE CANNOT BE COMPILED!
+# error: "goto *expr" is nonstandard
+
+
+# LLVM
+COMPILER='llvm'
+
+module purge
+module load llvm/16/latest-gcc
+
+CFLAGS=${internal_CFLAGS} make \
+   CC=clang \
+   CXX=clang++ \
+   -j ${NUM_PAR_COMP} || exit
+
+export INSTALL_TOP=${INSTALL_PREFIX}-${COMPILER}
+
+make install || exit
+make clean
+
+
+# GNU GCC
+COMPILER='gcc'
+
+module purge
+module load gcc/12/latest
+
+CFLAGS=${internal_CFLAGS} make \
+   CC=gcc \
+   CXX=g++ \
+   -j ${NUM_PAR_COMP} || exit
+
+export INSTALL_TOP=${INSTALL_PREFIX}-${COMPILER}
+
+make install
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+
