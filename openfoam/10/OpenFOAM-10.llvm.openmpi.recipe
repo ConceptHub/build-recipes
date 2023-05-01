@@ -24,6 +24,7 @@ source ${NAME}-${VERSION}/etc/bashrc
 module purge
 module load ${MPI_TYPE}/${MPI_VERSION}/llvm/latest-llvm
 module load llvm/16/latest-gcc
+module load gcc/13/latest
 
 export CC=clang
 export CXX=clang++

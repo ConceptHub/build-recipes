@@ -19,7 +19,7 @@ source ${NAME}-${VERSION}/etc/bashrc
 
 module purge
 module load ${MPI_TYPE}/${MPI_VERSION}/gcc/latest
-module load gcc/12/latest
+module load gcc/13/latest
 
 cd ThirdParty-${VERSION}
 ./Allwmake -j ${NUM_PAR_PROC}
