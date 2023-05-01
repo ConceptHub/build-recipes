@@ -1,9 +1,13 @@
 NAME="xz"
 MAJOR_VERSION="5"
 MINOR_VERSION="2.8"
-VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
-
+INSTALL_PREFIX=/opt/software
 BUILD_ROOT=~/build
+NUM_PAR_COMP=24
+
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
@@ -18,18 +22,19 @@ cd ${NAME}-${VERSION}
 COMPILER="intel"
 
 module purge
+module load cmake/latest
 module load intel
 module load compiler/latest
-module load cmake/latest
+module load gcc/13/latest
 
 cmake -B build-${COMPILER} \
       -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
       -DCMAKE_C_COMPILER="icx" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
-      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-cmake --build build-${COMPILER} -j 48 || exit
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
 
@@ -43,17 +48,37 @@ cmake --install build-${COMPILER} || exit
 COMPILER="aocc"
 
 module purge
-module load amd/aocc/latest
 module load cmake/latest
+module load amd/aocc/latest
+module load gcc/13/latest
 
 cmake -B build-${COMPILER} \
       -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
       -DCMAKE_C_COMPILER="clang" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
-      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-cmake --build build-${COMPILER} -j 48 || exit
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load cmake/latest
+module load llvm/16/latest-gcc
+module load gcc/13/latest
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
 
@@ -61,21 +86,20 @@ cmake --install build-${COMPILER} || exit
 COMPILER="gcc"
 
 module purge
-module load gcc/12/latest
 module load cmake/latest
+module load gcc/13/latest
 
 cmake -B build-${COMPILER} \
       -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
       -DCMAKE_C_COMPILER="gcc" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
-      -DCMAKE_INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}-${COMPILER}
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-cmake --build build-${COMPILER} -j 48 || exit
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
 
 # Clean up
 cd ${BUILD_ROOT}
 rm -fr ${NAME}-${VERSION}
-
