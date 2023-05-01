@@ -1,0 +1,123 @@
+NAME="lz4"
+MAJOR_VERSION="1"
+MINOR_VERSION="9.3"
+INSTALL_PREFIX=/opt/software
+BUILD_DIR=~/build
+NUM_PAR_COMP=24
+
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/13/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS="-xSSE4.2 -static-intel -mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+module load gcc/13/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=nvc \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_C_FLAGS="-Mvect=simd,noaltcode,simd:256 -Mcache_align -fma -static-nvidia -fPIC ${CFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/latest
+module load gcc/13/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load llvm/16/latest-gcc
+module load gcc/13/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/13/latest
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
+      -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# Clean
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
