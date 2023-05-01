@@ -1,11 +1,15 @@
 NAME="zstd"
 MAJOR_VERSION="1"
 MINOR_VERSION="5.5"
+INSTALL_PREFIX=/opt/software
+BUILD_DIR=~/build
+ZLIB_VERSION="1/1.2.13"
+LZ4_VERSION="1/1.9.4"
+XZ_VERSION="5/5.4.2"
+NUM_PAR_COMP=24
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
-
-INSTALL_PREFIX=/opt/software/${NAME}/${MAJOR_VERSION}/${VERSION}
-BUILD_DIR=~/build
+INSTALL_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
 
 export LANG=C
 export LC_ALL=C
@@ -23,37 +27,103 @@ module purge
 module load cmake/latest
 module load intel
 module load compiler/latest
-module load gcc/12/latest
+module load gcc/13/latest
+
+rm -fr ${INSTALL_PREFIX}-${COMPILER}
 
 cmake -S build/cmake \
       -B build-${COMPILER} \
       -DCMAKE_C_COMPILER=icx \
+      -DCMAKE_C_FLAGS="-static-intel ${CFLAGS}" \
       -DCMAKE_CXX_COMPILER=icpx \
+      -DCMAKE_CXX_FLAGS="-static-intel ${CXXFLAGS}" \
       -DZSTD_BUILD_TESTS=OFF \
       -DZSTD_ZLIB_SUPPORT=ON \
-      -DZLIB_INCLUDE_DIR=/opt/software/zlib/1/1.2.13-${COMPILER}/include \
-      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/1/1.2.13-${COMPILER}/lib/libz.a \
-      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/5/5.2.8-${COMPILER}/include \
-      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/5/5.2.8-${COMPILER}/lib64/liblzma.so \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/${XZ_VERSION}-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/${XZ_VERSION}-${COMPILER}/lib64/liblzma.a \
       -DZSTD_LZMA_SUPPORT=ON \
       -DZSTD_LZ4_SUPPORT=ON \
-      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/1/1.9.4-${COMPILER}/include \
-      -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/lib64/liblz4.a \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-cmake --build build-${COMPILER} -j 12 || exit
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
-cd ${INSTALL_PREFIX}-${COMPILER}
-ln -s lib64 lib
-cd ${BUILD_DIR}/${NAME}-${VERSION}
+
+# NVIDIA HPC SDK
+# NO BUILD BECAUSE OF XZ
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load cmake/latest
+module load amd/aocc/latest
+module load gcc/13/latest
+
+rm -fr ${INSTALL_PREFIX}-${COMPILER}
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DZSTD_BUILD_TESTS=OFF \
+      -DZSTD_ZLIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/${XZ_VERSION}-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/${XZ_VERSION}-${COMPILER}/lib64/liblzma.a \
+      -DZSTD_LZMA_SUPPORT=ON \
+      -DZSTD_LZ4_SUPPORT=ON \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/lib64/liblz4.a \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load cmake/latest
+module load llvm/16/latest-gcc
+module load gcc/13/latest
+
+rm -fr ${INSTALL_PREFIX}-${COMPILER}
+
+cmake -S build/cmake \
+      -B build-${COMPILER} \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_CXX_COMPILER=clang++ \
+      -DZSTD_BUILD_TESTS=OFF \
+      -DZSTD_ZLIB_SUPPORT=ON \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/${XZ_VERSION}-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/${XZ_VERSION}-${COMPILER}/lib64/liblzma.a \
+      -DZSTD_LZMA_SUPPORT=ON \
+      -DZSTD_LZ4_SUPPORT=ON \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/lib64/liblz4.a \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
 
 
 # GNU GCC
 COMPILER="gcc"
 
 module purge
-module load gcc/12/latest
+module load gcc/13/latest
+
+rm -fr ${INSTALL_PREFIX}-${COMPILER}
 
 cmake -S build/cmake \
       -B build-${COMPILER} \
@@ -61,22 +131,18 @@ cmake -S build/cmake \
       -DCMAKE_CXX_COMPILER=g++ \
       -DZSTD_BUILD_TESTS=OFF \
       -DZSTD_ZLIB_SUPPORT=ON \
-      -DZLIB_INCLUDE_DIR=/opt/software/zlib/1/1.2.13-${COMPILER}/include \
-      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/1/1.2.13-${COMPILER}/lib/libz.a \
-      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/5/5.2.8-${COMPILER}/include \
-      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/5/5.2.8-${COMPILER}/lib64/liblzma.so \
+      -DZLIB_INCLUDE_DIR=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/include \
+      -DZLIB_LIBRARY_RELEASE=/opt/software/zlib/${ZLIB_VERSION}-${COMPILER}/lib/libz.a \
+      -DLIBLZMA_INCLUDE_DIR=/opt/software/xz/${XZ_VERSION}-${COMPILER}/include \
+      -DLIBLZMA_LIBRARY_RELEASE=/opt/software/xz/${XZ_VERSION}-${COMPILER}/lib64/liblzma.a \
       -DZSTD_LZMA_SUPPORT=ON \
       -DZSTD_LZ4_SUPPORT=ON \
-      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/1/1.9.4-${COMPILER}/include \
-      -DLIBLZ4_LIBRARY=/opt/software/lz4/1/1.9.4-${COMPILER}/lib64/liblz4.a \
+      -DLIBLZ4_INCLUDE_DIR=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/include \
+      -DLIBLZ4_LIBRARY=/opt/software/lz4/${LZ4_VERSION}-${COMPILER}/lib64/liblz4.a \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
-cmake --build build-${COMPILER} -j 12 || exit
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
-
-cd ${INSTALL_PREFIX}-${COMPILER}
-ln -s lib64 lib
-cd ${BUILD_DIR}/${NAME}-${VERSION}
 
 
 # Clean up
