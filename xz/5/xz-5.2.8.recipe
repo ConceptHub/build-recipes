@@ -38,6 +38,17 @@ cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
 
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-static-intel -msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="icx" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
 # NVIDIA HPC SDK
 #
 # NOT YET AVAILABLE - COMPILER FAILS
@@ -63,6 +74,17 @@ cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
 
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="clang" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+
 # LLVM
 COMPILER="llvm"
 
@@ -81,6 +103,16 @@ cmake -B build-${COMPILER} \
 cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
 cmake --install build-${COMPILER} || exit
 
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER=clang \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
 
 # GNU GCC
 COMPILER="gcc"
@@ -94,6 +126,16 @@ cmake -B build-${COMPILER} \
       -DCMAKE_C_COMPILER="gcc" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
+
+cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
+cmake --install build-${COMPILER} || exit
+
+cmake -B build-${COMPILER} \
+      -DCMAKE_C_FLAGS="-msse3 -msse4.1 -mavx -mavx2 -mavx2 -fPIC" \
+      -DCMAKE_C_COMPILER="gcc" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
 cmake --build build-${COMPILER} -j ${NUM_PAR_COMP} || exit
