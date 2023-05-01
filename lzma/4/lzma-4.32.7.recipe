@@ -1,0 +1,114 @@
+NAME="lzma"
+MAJOR_VERSION="4"
+MINOR_VERSION="32.7"
+INSTALL_PREFIX=/opt/software
+BUILD_DIR=~/build
+NUM_PAR_COMP=24
+
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+INSTALL_PREFIX+="/${NAME}/${MAJOR_VERSION}/${VERSION}"
+
+export LANG=C
+export LC_ALL=C
+
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+
+module purge
+module load intel
+module load compiler/latest
+module load gcc/13/latest
+
+./configure \
+   --prefix=${INSTALL_PREFIX}-${COMPILER} \
+   CC=icx \
+   CXX=icpx \
+   CFLAGS="-O3 -mavx2 -mfma -mtune=native ${CFLAGS}" \
+   CXXFLAGS="-O3 -mavx2 -mfma -mtune=native ${CXXFLAGS}"
+
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+
+module purge
+module load nvidia
+module load nvhpc/latest
+module load gcc/13/latest
+
+./configure \
+   --prefix=${INSTALL_PREFIX}-${COMPILER} \
+   CC=nvc \
+   CXX=nvc++ \
+   CFLAGS="-O3 -Mcache_align -Mvect -tp=zen2 ${CFLAGS}" \
+   CXXFLAGS="-O3 -Mcache_align -Mvect -tp=zen2 ${CXXFLAGS}"
+
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
+
+
+# AMD AOCC
+COMPILER="aocc"
+
+module purge
+module load amd/aocc/4/latest
+module load gcc/13/latest
+
+./configure \
+   --prefix=${INSTALL_PREFIX}-${COMPILER} \
+   CC=clang \
+   CXX=clang++ \
+   CFLAGS="-O3 -mavx2 -mfma -mtune=native ${CFLAGS}" \
+   CXXFLAGS="-O3 -mavx2 -mfma -mtune=native ${CXXFLAGS}"
+
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
+
+
+# LLVM
+COMPILER="llvm"
+
+module purge
+module load llvm/16/latest-gcc
+module load gcc/13/latest
+
+./configure \
+   --prefix=${INSTALL_PREFIX}-${COMPILER} \
+   CC=clang \
+   CXX=clang++ \
+   CFLAGS="-O3 -mavx2 -mfma -mtune=native ${CFLAGS}" \
+   CXXFLAGS="-O3 -mavx2 -mfma -mtune=native ${CXXFLAGS}"
+
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
+
+
+# GNU GCC
+COMPILER="gcc"
+
+module purge
+module load gcc/13/latest
+
+./configure \
+   --prefix=${INSTALL_PREFIX}-${COMPILER} \
+   CC=gcc \
+   CXX=g++ \
+   CFLAGS="-O3 -mavx2 -mfma -mtune=native ${CFLAGS}" \
+   CXXFLAGS="-O3 -mavx2 -mfma -mtune=native ${CXXFLAGS}"
+
+make -j ${NUM_PAR_COMP} install || exit
+make distclean
+
+
+# Clean up
+cd ${BUILD_DIR}
+rm -fr ${NAME}-${VERSION}
