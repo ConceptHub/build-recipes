@@ -1,0 +1,199 @@
+NAME="OpenBLAS"
+INSTALL_NAME="openblas"
+MAJOR_VERSION="0"
+MINOR_VERSION="3.23"
+INSTALL_PREFIX=/opt/software
+BUILD_ROOT=~/build
+TARGET="ZEN"
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}
+
+INSTALL_PREFIX+="/${INSTALL_NAME}/${MAJOR_VERSION}/${VERSION}"
+
+export LANG=C
+export LC_ALL=C
+
+function compile () {
+
+   USE_OPENMP=${1}
+   INTERFACE64=${2}
+
+   make TARGET=${3} \
+      USE_OPENMP=${USE_OPENMP} \
+      INTERFACE64=${INTERFACE64} \
+      C_COMPILER=${4} \
+      F_COMPILER=${5} \
+      CC=${6} \
+      FC=${7}
+
+   PREFIX=${8}-${9}`[ $USE_OPENMP == 1 ] && echo "-openmp"``[ $INTERFACE64 == 1 ] && echo "-int64"`
+
+   rm -fr ${PREFIX} install || exit
+   make PREFIX=${PREFIX} install || exit
+
+   cd ${PREFIX} || exit
+
+   ln -s lib lib64 || exit
+
+   cd lib || exit
+
+   unlink libopenblas.a
+   unlink libopenblas.so
+   unlink libopenblas.so.${11}
+
+   CHG=`[ $INTERFACE64 == 1 ] && echo "_64"`
+
+   ln -s libopenblas_zenp-r${10}.a libopenblas${CHG}.a
+   ln -s libopenblas_zenp-r${10}.so libopenblas${CHG}.so
+   ln -s libopenblas_zenp-r${10}.so libopenblas${CHG}.so.${11}
+
+   sed -i "s/libopenblas.so/libopenblas${CHG}.so/g" ${PREFIX}/lib/cmake/openblas/OpenBLASConfig.cmake
+
+   cd ${12}
+
+   make clean
+
+}
+
+
+# Unpack
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
+tar xvf ${NAME}-${VERSION}.tar.gz
+cd ${NAME}-${VERSION}
+
+
+# Intel oneAPI
+COMPILER="intel"
+C_COMPILER="INTEL"
+F_COMPILER="INTEL"
+
+module purge
+module load intel
+module load compiler/latest
+
+CC=icx
+FC=ifx
+
+USE_OPENMP=0
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=0
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+
+# NVIDIA HPC SDK
+COMPILER="nvidia"
+C_COMPILER="PGI"
+F_COMPILER="PGI"
+
+module purge
+module load nvidia
+module load nvhpc-nompi/latest
+
+CC=nvc
+FC=nvfortran
+
+USE_OPENMP=0
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=0
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+
+# AMD AOCC
+COMPILER="aocc"
+C_COMPILER="CLANG"
+F_COMPILER="FLANG"
+
+module purge
+module load amd/aocc/latest
+
+CC=clang
+FC=flang
+
+USE_OPENMP=0
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=0
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+
+# GNU
+COMPILER="gcc"
+C_COMPILER="GCC"
+F_COMPILER="GFORTRAN"
+
+module purge
+module load nvidia
+module load gcc/12/latest
+
+CC=gcc
+FC=gfortran
+
+USE_OPENMP=0
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=0
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=0
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+USE_OPENMP=1
+INTERFACE64=1
+
+compile ${USE_OPENMP} ${INTERFACE64} ${TARGET} ${C_COMPILER} ${F_COMPILER} ${CC} ${FC} ${INSTALL_PREFIX} ${COMPILER} ${VERSION} ${MAJOR_VERSION} ${BUILD_ROOT}/${NAME}-${VERSION}
+
+
+# Clean up
+cd ${BUILD_ROOT}
+rm -fr ${NAME}-${VERSION}
