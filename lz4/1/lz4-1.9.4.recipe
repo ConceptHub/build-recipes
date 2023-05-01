@@ -51,6 +51,7 @@ cmake -S build/cmake \
       -DCMAKE_C_COMPILER=nvc \
       -DCMAKE_BUILD_TYPE=Release \
       -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
       -DCMAKE_C_FLAGS="-Mvect=simd,noaltcode,simd:256 -Mcache_align -fma -static-nvidia -fPIC ${CFLAGS}" \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
@@ -70,6 +71,7 @@ cmake -S build/cmake \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_BUILD_TYPE=Release \
       -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
       -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
@@ -89,6 +91,7 @@ cmake -S build/cmake \
       -DCMAKE_C_COMPILER=clang \
       -DCMAKE_BUILD_TYPE=Release \
       -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
       -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
@@ -107,6 +110,7 @@ cmake -S build/cmake \
       -DCMAKE_C_COMPILER=gcc \
       -DCMAKE_BUILD_TYPE=Release \
       -DCFLAG_W4=0 \
+      -DBUILD_STATIC_LIBS=ON \
       -DCMAKE_C_FLAGS="-mavx2 -mfma -mtune=native -fPIC ${CFLAGS}" \
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}-${COMPILER}
 
