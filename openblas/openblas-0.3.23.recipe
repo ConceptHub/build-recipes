@@ -167,7 +167,6 @@ C_COMPILER="GCC"
 F_COMPILER="GFORTRAN"
 
 module purge
-module load nvidia
 module load gcc/12/latest
 
 CC=gcc
